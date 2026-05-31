@@ -405,7 +405,6 @@ function renderPathsTab(container) {
   var dailyHtml = '<div class="daily-card"><div class="daily-label">' + (dc.type === 'quote' ? '今日一语' : dc.type === 'question' ? '今日一问' : '今日视野') + '</div><p class="daily-text">' + escapeHtml(dc.text) + '</p>' + (dc.source ? '<p class="daily-source">' + escapeHtml(dc.source) + '</p>' : '') + '</div>';
   container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji">' + m.emoji + '</span><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span></div>'; }).join("") + '</div>';
 }
-}
 
 function renderBooksTab(container) {
   var pref = loadReadingPref();

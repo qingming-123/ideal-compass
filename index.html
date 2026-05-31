@@ -14,6 +14,11 @@
     --bg: #fdfaf5; --fg: #292524; --fg2: #57534e; --muted: #a8a29e;
     --accent: #d97706; --accent2: #f59e0b; --accent-bg: #fffbeb;
     --accent-border: #fde68a; --card: #ffffff; --border: #e7e5e4;
+  }
+  [data-theme="dark"] {
+    --bg: #1c1917; --fg: #e7e5e4; --fg2: #a8a29e; --muted: #78716c;
+    --accent: #f59e0b; --accent2: #fbbf24; --accent-bg: #292524;
+    --accent-border: #44403c; --card: #292524; --border: #44403c;
     --green: #16a34a; --green-bg: #f0fdf4; --green-border: #bbf7d0;
     --radius: 14px; --radius-sm: 10px;
     --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
@@ -166,6 +171,7 @@
 
   <div class="topbar">
     <span class="logo" onclick="navigate('home')">理想罗盘</span>
+    <span style="cursor:pointer;font-size:1.1rem;" id="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">🌙</span>
     <div class="topbar-links">
       <span class="topbar-link active" data-nav="home" onclick="navigate('home')">探索</span>
       <span class="topbar-link" data-nav="action" onclick="navigate('action')">行理想</span>
@@ -217,7 +223,8 @@ const PATH_META = {
   act: { name: "行动 · 在尝试中感受", emoji: "🔥", desc: "有些答案只在行动中浮现。我们为你设计几个微型实验，做完了再回来写感受。" },
   dialogue: { name: "对话 · 在表达中理清", emoji: "💬", desc: "我会持续追问，像一位不带评判的朋友。你不需要完美的答案，只需要诚实的回应。" },
   observe: { name: "观照 · 从他人身上看见", emoji: "👁️", desc: "阅读下面这些真实写下的理想档案。哪些地方引起了你的共鸣？哪些让你觉得「这也是我想要的」？" },
-  frame: { name: "建构 · 用框架分析自我", emoji: "🧭", desc: "从多个维度系统地审视自己。不需要一次填完，但越诚实，结果越有用。" }
+  frame: { name: "建构 · 用框架分析自我", emoji: "🧭", desc: "从多个维度系统地审视自己。不需要一次填完，但越诚实，结果越有用。" },
+  reverse: { name: "反观 · 从不想成为的样子反推", emoji: "🪞", desc: "有时候，知道自己不想要什么比知道自己想要什么更容易。从反面入手，反向照亮你的方向。" }
 };
 
 const REFLECT_PROMPTS = [
@@ -248,6 +255,14 @@ const SAMPLE_PROFILES = [
   { name: "匿名 · 26岁", statement: "我想成为那种能用文字让人感到「被理解」的人。小时候我喜欢给朋友写信，不是那种寒暄的信，而是认真地告诉对方我觉得他有多特别。后来我学了金融，但我发现我做报表的时候在想「能不能把这份分析报告写得像一封信」。可能我的理想不是什么具体的职位——而是无论做什么，都保持用文字真诚地连接人。", values: ["真诚", "连接", "表达"], action: "每周写一篇短文，不为了发表，只是为了练习真诚地说话。" },
   { name: "匿名 · 31岁", statement: "我想成为一个「搭桥的人」。我的社区里有很多有才华的年轻人，但他们不知道去哪里找机会。我在大公司工作了八年，看到了两边——一边是需要人才的企业，一边是找不到路的人。我的理想是做一个连接器，把资源引到被忽视的地方。不是做慈善，是做生态。", values: ["公平", "赋能", "创造"], action: "已经开始在工作之余搭建一个技能分享的小组，目前有12个人每周见面。" },
   { name: "匿名 · 22岁", statement: "说实话我不知道我想成为什么样的人。但我知道我不想成为什么样——我不想成为一个麻木的人。我看到太多人30岁以后就不再好奇了，不再激动了，不再觉得「哇这个世界还有这么多我不知道的东西」。所以目前我的理想很简单：保持好奇，保持柔软，不要让自己变硬。", values: ["好奇", "柔软", "成长"], action: "每个月学一样完全陌生的东西。上个月是陶艺，这个月是观鸟。" }
+];
+
+// Reverse exploration (反观)
+const REVERSE_PROMPTS = [
+  { q: "你见过的最让你不想过的人生是什么样的？描述一个人（可以是真实认识的，也可以是看到的）。他/她的什么状态让你感到'我绝对不要变成这样'？", hint: "具体描述——是麻木的表情、机械的生活、还是放弃了曾经的梦想？" },
+  { q: "如果你继续现在的生活方式十年不变，你最担心自己变成什么样子？", hint: "不要回避，写下那个最让你不安的可能性。" },
+  { q: "把上面你写下的'不想成为的样子'翻转过来——它的反面是什么？那个反面，是不是就是你真正想要的？", hint: "比如：'不想变得麻木'的反面可能是'永远对新事物保持好奇和兴奋'。" },
+  { q: "有没有一件事你一直在逃避，但内心深处知道'如果我做了，我会更接近我想成为的人'？是什么？", hint: "逃避比失败消耗更多能量。直面它。" }
 ];
 
 const FRAME_DIMENSIONS = [
@@ -342,7 +357,8 @@ let observedIdx = null;
 // ============================================================
 
 function loadProfile() { const raw = localStorage.getItem("ic_profile"); return raw ? JSON.parse(raw) : null; }
-function saveProfile(p) { idealProfile = p; localStorage.setItem("ic_profile", JSON.stringify(p)); }
+function saveProfile(p) { idealProfile = p; localStorage.setItem("ic_profile", JSON.stringify(p)); var hist = loadProfileHistory(); hist.push({ statement: p.statement, values: p.values, actions: p.actions, date: new Date().toISOString() }); if (hist.length > 20) hist = hist.slice(-20); localStorage.setItem("ic_profile_history", JSON.stringify(hist)); }
+function loadProfileHistory() { var raw = localStorage.getItem("ic_profile_history"); return raw ? JSON.parse(raw) : []; }
 function loadCommunity() { const raw = localStorage.getItem("ic_community"); let e = raw ? JSON.parse(raw) : []; if (e.length === 0) { e = SEED_COMMUNITY; localStorage.setItem("ic_community", JSON.stringify(e)); } return e; }
 function saveCommunityEntry(entry) { const e = loadCommunity(); e.unshift(entry); localStorage.setItem("ic_community", JSON.stringify(e)); }
 function loadAchievements() { const raw = localStorage.getItem("ic_achievements"); return raw ? JSON.parse(raw) : []; }
@@ -353,6 +369,10 @@ function loadNickname() { return localStorage.getItem("ic_nickname") || ""; }
 function saveNickname(n) { localStorage.setItem("ic_nickname", n); }
 function loadReadingPref() { return localStorage.getItem("ic_readingpref") || "douban"; }
 function saveReadingPref(p) { localStorage.setItem("ic_readingpref", p); }
+function loadTheme() { return localStorage.getItem("ic_theme") || "light"; }
+function saveTheme(t) { localStorage.setItem("ic_theme", t); applyTheme(t); }
+function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); document.getElementById("theme-toggle").textContent = t === "dark" ? "☀️" : "🌙"; }
+function toggleTheme() { var t = loadTheme(); saveTheme(t === "dark" ? "light" : "dark"); }
 
 // ============================================================
 // NAVIGATION
@@ -428,6 +448,7 @@ function getPathLength() {
   if (currentPath === "dialogue") return Object.keys(DIALOGUE_FOLLOWUPS).length + 1;
   if (currentPath === "observe") return 1;
   if (currentPath === "frame") return FRAME_DIMENSIONS.length;
+  if (currentPath === "reverse") return REVERSE_PROMPTS.length;
   return 5;
 }
 
@@ -443,6 +464,7 @@ function renderExploreStep() {
   else if (currentPath === "dialogue") renderDialogueStep(card);
   else if (currentPath === "observe") renderObserveStep(card);
   else if (currentPath === "frame") renderFrameStep(card);
+  else if (currentPath === "reverse") renderReverseStep(card);
 }
 
 function advanceExplore() {
@@ -452,6 +474,7 @@ function advanceExplore() {
   if (currentPath === "dialogue" && currentStep > Object.keys(DIALOGUE_FOLLOWUPS).length + 1) { buildProfileFromAnswers(); return; }
   if (currentPath === "observe" && currentStep > 1) { buildProfileFromAnswers(); return; }
   if (currentPath === "frame" && currentStep > FRAME_DIMENSIONS.length) { buildProfileFromAnswers(); return; }
+  if (currentPath === "reverse" && currentStep > REVERSE_PROMPTS.length) { buildProfileFromAnswers(); return; }
   renderExploreStep();
 }
 
@@ -507,6 +530,15 @@ function renderFrameStep(card) {
 function toggleFrameTag(el, tag, idx) { var key = "frame_" + idx; if (!answers[key]) answers[key] = []; var arr = answers[key]; if (arr.indexOf(tag) >= 0) { answers[key] = arr.filter(function(t) { return t !== tag; }); el.classList.remove("picked"); } else { arr.push(tag); el.classList.add("picked"); } }
 function saveFrameAnswer(idx) { advanceExplore(); }
 
+// --- REVERSE ---
+function renderReverseStep(card) {
+  var idx = currentStep - 1, p = REVERSE_PROMPTS[idx], total = REVERSE_PROMPTS.length, prev = answers["reverse_" + idx] || "";
+  var dots = ""; for (var i = 0; i < total; i++) { dots += '<div class="step-dot ' + (i < idx ? 'done' : i === idx ? 'current' : '') + '"></div>'; }
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><p class="prompt-question">' + escapeHtml(p.q) + '</p><p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">' + escapeHtml(p.hint) + '</p><textarea class="text-input" id="reverse-answer" placeholder="写下你真实的感受……">' + escapeHtml(prev) + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一题</button><button class="btn btn-primary" onclick="saveReverseAnswer(' + idx + ')">' + (idx < total - 1 ? '下一题' : '完成') + '</button></div></div>';
+  setTimeout(function() { var ta = document.getElementById("reverse-answer"); if (ta) ta.focus(); }, 100);
+}
+function saveReverseAnswer(idx) { answers["reverse_" + idx] = document.getElementById("reverse-answer").value.trim(); advanceExplore(); }
+
 // ============================================================
 // PROFILE BUILDING (from exploration)
 // ============================================================
@@ -525,6 +557,7 @@ function synthesizeProfile() {
   else if (currentPath === "dialogue") { if (dialogueHistory.length > 0) { statement = "在对话中，你逐渐接近了核心：\n\n" + dialogueHistory.map(function(h) { return "问：" + h.q + "\n答：" + h.a; }).join("\n\n"); } else { statement = "对话帮助你理清了一些方向。试着用一句话总结你的发现。"; } values = ["真实", "智慧", "独立"]; actions = "找一位信任的朋友，和他/她面对面聊聊你今天写下的这些。"; }
   else if (currentPath === "observe") { if (observedIdx !== null) { var picked = SAMPLE_PROFILES[observedIdx]; statement = "你被「" + picked.name + "」的档案触动了。那份档案中说：\n\n「" + picked.statement + "」\n\n现在，用你自己的语言，写下属于你的版本。"; values = picked.values.slice(); actions = picked.action; } else { statement = "你读了几份真实的理想档案。哪些地方让你产生了共鸣？把这些共鸣写下来，那就是你的线索。"; values = ["真实", "连接", "成长"]; actions = ""; } var refl = answers["observe_reflection"]; if (refl) statement += "\n\n你的感受：" + refl; }
   else if (currentPath === "frame") { var parts = []; FRAME_DIMENSIONS.forEach(function(dim, i) { var p = answers["frame_" + i] || []; if (p.length > 0) { parts.push("【" + dim.title + "】" + p.join("、")); values = values.concat(p); } }); statement = "通过系统分析：\n\n" + parts.join("\n") + "\n\n现在，试着把这些碎片拼成一幅完整的图景。"; values = values.filter(function(v, i, a) { return a.indexOf(v) === i; }).slice(0, 6); actions = "对照上面的分析，找出一个你可以马上启动的小项目。"; }
+  else if (currentPath === "reverse") { var all = Object.values(answers).filter(Boolean); if (all.length > 0) { statement = "通过反观，你看到了自己不想成为的样子：\n\n" + all.map(function(a, i) { return "· " + a; }).join("\n\n") + "\n\n——现在，把这些翻转过来。你真正想成为的人，就藏在你不想要的反面。试着用一句话写下那个'反面'。"; } else { statement = "你还没有写下太多。试着回答：你最不想成为什么样的人？它的反面就是你真正的方向。"; } values = ["真实", "觉醒", "勇气"]; actions = "写下「我不想______，所以我要______」的三句话，贴在每天能看到的地方。"; }
   return { statement: statement, values: values, actions: actions };
 }
 
@@ -550,7 +583,9 @@ function renderProfile() {
   if (achievements.length > 0) {
     achHtml = '<div class="profile-section"><h3>已点亮成就</h3><div class="achievement-grid">' + achievements.map(function(a) { return '<div class="achievement-badge earned"><span class="badge-icon">' + escapeHtml(a.icon) + '</span><span class="badge-name">' + escapeHtml(a.name) + '</span><span class="badge-date">' + escapeHtml(a.date) + '</span></div>'; }).join("") + '</div></div>';
   }
-  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (PATH_META[p.path]?.name || "未知") + '」探索</p><div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出我的档案</button></div></div>';
+  var hist = loadProfileHistory(); var timeHtml = '';
+  if (hist.length > 1) { timeHtml = '<div class="profile-section"><h3>理想时间线</h3><div style="font-size:0.85rem;color:var(--muted);">' + hist.slice(-5).reverse().map(function(h) { return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + new Date(h.date).toLocaleDateString("zh-CN") + ' — ' + escapeHtml((h.statement || "").slice(0, 60)) + (h.statement && h.statement.length > 60 ? '……' : '') + '</div>'; }).join("") + '</div></div>'; }
+  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (PATH_META[p.path]?.name || "未知") + '」探索</p><div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + timeHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出档案</button><button class="btn btn-primary btn-sm" onclick="generateShareCard()">🖼️ 生成分享卡片</button></div></div>';
 }
 function editProfile() { var p = loadProfile(); if (!p) return; answers = {}; currentPath = p.path; dialogueHistory = []; navigate("explore"); currentStep = getPathLength() + 1; renderBuildProfile(document.getElementById("explore-card")); }
 
@@ -752,6 +787,62 @@ function importData(event) {
 }
 
 // ============================================================
+// SHARE CARD
+// ============================================================
+
+function generateShareCard() {
+  var p = loadProfile(); if (!p) { alert("请先创建理想档案。"); return; }
+  var canvas = document.createElement("canvas"); canvas.width = 600; canvas.height = 800;
+  var ctx = canvas.getContext("2d");
+  // Background
+  ctx.fillStyle = "#fdfaf5"; ctx.fillRect(0, 0, 600, 800);
+  // Top accent bar
+  ctx.fillStyle = "#d97706"; ctx.fillRect(0, 0, 600, 8);
+  // Title
+  ctx.fillStyle = "#292524"; ctx.font = "bold 28px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("我的理想档案", 50, 70);
+  // Divider
+  ctx.fillStyle = "#d97706"; ctx.fillRect(50, 90, 80, 3);
+  // Statement
+  ctx.fillStyle = "#57534e"; ctx.font = "17px 'PingFang SC','Microsoft YaHei',sans-serif";
+  var lines = wrapText(ctx, "「" + (p.statement || "还在寻找中……") + "」", 500);
+  var y = 130;
+  for (var i = 0; i < lines.length && i < 20; i++) { ctx.fillText(lines[i], 50, y); y += 30; }
+  // Values
+  y += 30;
+  ctx.fillStyle = "#d97706"; ctx.font = "bold 16px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("核心价值", 50, y); y += 30;
+  if (p.values && p.values.length > 0) {
+    var vx = 50;
+    for (var j = 0; j < p.values.length; j++) {
+      var vw = ctx.measureText(p.values[j]).width + 24;
+      if (vx + vw > 550) { vx = 50; y += 36; }
+      ctx.fillStyle = "#fef3c7"; ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.5;
+      roundRect(ctx, vx, y - 18, vw, 28, 14); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#92400e"; ctx.font = "14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(p.values[j], vx + 12, y);
+      vx += vw + 10;
+    }
+  }
+  // Footer
+  y = 720;
+  ctx.fillStyle = "#a8a29e"; ctx.font = "13px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("—— 来自「理想罗盘」", 50, y);
+  ctx.fillText("qingming-123.github.io/ideal-compass", 50, y + 24);
+  // Logo area
+  ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(530, 740, 20, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.moveTo(530, 722); ctx.lineTo(536, 738); ctx.lineTo(530, 735); ctx.lineTo(524, 738); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(530, 740, 4, 0, Math.PI * 2); ctx.fill();
+  // Download
+  canvas.toBlob(function(blob) { var url = URL.createObjectURL(blob); var a = document.createElement("a"); a.href = url; a.download = "理想档案_分享卡.png"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); });
+  var toast = document.createElement("div"); toast.className = "copied-toast"; toast.textContent = "分享卡片已下载！可以发朋友圈啦";
+  document.body.appendChild(toast); setTimeout(function() { toast.remove(); }, 2500);
+}
+function wrapText(ctx, text, maxWidth) {
+  var words = text.split(""); var lines = []; var current = "";
+  for (var i = 0; i < words.length; i++) { var test = current + words[i]; if (ctx.measureText(test).width > maxWidth && current.length > 0) { lines.push(current); current = words[i]; } else { current = test; } }
+  if (current.length > 0) lines.push(current);
+  return lines;
+}
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); }
+
+// ============================================================
 // UTILS
 // ============================================================
 
@@ -762,6 +853,7 @@ function escapeHtml(str) { if (!str) return ""; var div = document.createElement
 // ============================================================
 
 idealProfile = loadProfile();
+applyTheme(loadTheme());
 renderHomeTab();
 </script>
 </body>

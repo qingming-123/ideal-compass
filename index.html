@@ -114,6 +114,18 @@
   .daily-card .daily-label { font-size: 0.72rem; font-weight: 650; letter-spacing: 0.04em; color: var(--accent); margin-bottom: 6px; text-transform: uppercase; }
   .daily-card .daily-text { font-size: 0.95rem; line-height: 1.65; color: var(--fg); }
   .daily-card .daily-source { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+  [data-theme="dark"] .profile-block { background: #1c1917; }
+  [data-theme="dark"] .tag-btn.picked { background: #3b2f0e; color: #fbbf24; border-color: #92400e; }
+  [data-theme="dark"] .persona-card:hover { background: #2d2a28; }
+  [data-theme="dark"] .resource-card:hover { background: #2d2a28; }
+  [data-theme="dark"] .milestone-item { border-bottom-color: #44403c; }
+  [data-theme="dark"] .achievement-badge.earned { background: #1a2e1a; border-color: #166534; }
+  [data-theme="dark"] .milestone-check { background: #292524; }
+  [data-theme="dark"] .text-input { background: #1c1917; color: var(--fg); }
+  [data-theme="dark"] .text-input:focus { background: #292524; }
+  [data-theme="dark"] .daily-card { background: linear-gradient(135deg, #2d2a28, #1c1917); }
+  [data-theme="dark"] .resource-card.selected { background: #2d2a28; }
+  [data-theme="dark"] .book-link { background: #2d2a28; }
 
   /* Book cards */
   .book-card { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: all 0.15s; }
@@ -792,43 +804,64 @@ function importData(event) {
 
 function generateShareCard() {
   var p = loadProfile(); if (!p) { alert("请先创建理想档案。"); return; }
+  var nick = loadNickname() || "一位探索者";
   var canvas = document.createElement("canvas"); canvas.width = 600; canvas.height = 800;
   var ctx = canvas.getContext("2d");
-  // Background
-  ctx.fillStyle = "#fdfaf5"; ctx.fillRect(0, 0, 600, 800);
-  // Top accent bar
-  ctx.fillStyle = "#d97706"; ctx.fillRect(0, 0, 600, 8);
-  // Title
-  ctx.fillStyle = "#292524"; ctx.font = "bold 28px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("我的理想档案", 50, 70);
+  // Background gradient
+  var grad = ctx.createLinearGradient(0, 0, 0, 800); grad.addColorStop(0, "#fefce8"); grad.addColorStop(0.5, "#fdfaf5"); grad.addColorStop(1, "#fffbeb");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 800);
+  // Decorative top
+  ctx.fillStyle = "#d97706"; ctx.fillRect(0, 0, 600, 6);
+  // Compass logo
+  ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(50, 55, 22, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.moveTo(50, 35); ctx.lineTo(56, 51); ctx.lineTo(50, 48); ctx.lineTo(44, 51); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(50, 55, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#d97706"; ctx.globalAlpha = 0.4;
+  ctx.beginPath(); ctx.moveTo(50, 75); ctx.lineTo(44, 59); ctx.lineTo(50, 62); ctx.lineTo(56, 59); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha = 1;
+  // Brand
+  ctx.fillStyle = "#d97706"; ctx.font = "bold 18px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("理想罗盘", 82, 62);
+  // Subtitle
+  ctx.fillStyle = "#a8a29e"; ctx.font = "12px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("发现你想成为什么样的人", 82, 82);
+  // Who
+  ctx.fillStyle = "#292524"; ctx.font = "bold 16px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(nick + " 的理想档案", 50, 130);
   // Divider
-  ctx.fillStyle = "#d97706"; ctx.fillRect(50, 90, 80, 3);
-  // Statement
-  ctx.fillStyle = "#57534e"; ctx.font = "17px 'PingFang SC','Microsoft YaHei',sans-serif";
-  var lines = wrapText(ctx, "「" + (p.statement || "还在寻找中……") + "」", 500);
-  var y = 130;
-  for (var i = 0; i < lines.length && i < 20; i++) { ctx.fillText(lines[i], 50, y); y += 30; }
+  ctx.fillStyle = "#fde68a"; ctx.fillRect(50, 142, 50, 3);
+  // Statement section
+  var stmt = p.statement ? p.statement.slice(0, 280) : "还在寻找中……";
+  ctx.fillStyle = "#57534e"; ctx.font = "16px 'PingFang SC','Microsoft YaHei',sans-serif";
+  var lines = wrapText(ctx, stmt, 500); var y = 175;
+  for (var i = 0; i < lines.length && i < 14; i++) { ctx.fillText(lines[i], 50, y); y += 28; }
   // Values
-  y += 30;
-  ctx.fillStyle = "#d97706"; ctx.font = "bold 16px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("核心价值", 50, y); y += 30;
+  y += 20;
   if (p.values && p.values.length > 0) {
+    ctx.fillStyle = "#d97706"; ctx.font = "bold 14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("✦ 核心价值", 50, y); y += 28;
     var vx = 50;
     for (var j = 0; j < p.values.length; j++) {
       var vw = ctx.measureText(p.values[j]).width + 24;
-      if (vx + vw > 550) { vx = 50; y += 36; }
-      ctx.fillStyle = "#fef3c7"; ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.5;
-      roundRect(ctx, vx, y - 18, vw, 28, 14); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#92400e"; ctx.font = "14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(p.values[j], vx + 12, y);
+      if (vx + vw > 540) { vx = 50; y += 34; }
+      ctx.fillStyle = "#fef3c7"; ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.2;
+      roundRect(ctx, vx, y - 17, vw, 27, 13); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#92400e"; ctx.font = "13px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(p.values[j], vx + 12, y);
       vx += vw + 10;
     }
   }
-  // Footer
-  y = 720;
-  ctx.fillStyle = "#a8a29e"; ctx.font = "13px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("—— 来自「理想罗盘」", 50, y);
-  ctx.fillText("qingming-123.github.io/ideal-compass", 50, y + 24);
-  // Logo area
-  ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(530, 740, 20, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.moveTo(530, 722); ctx.lineTo(536, 738); ctx.lineTo(530, 735); ctx.lineTo(524, 738); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.arc(530, 740, 4, 0, Math.PI * 2); ctx.fill();
+  // Actions
+  y += 44;
+  if (p.actions) {
+    ctx.fillStyle = "#d97706"; ctx.font = "bold 14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("✦ 正在做的事", 50, y); y += 26;
+    ctx.fillStyle = "#78716c"; ctx.font = "14px 'PingFang SC','Microsoft YaHei',sans-serif";
+    var actLines = wrapText(ctx, p.actions.slice(0, 120), 500);
+    for (var k = 0; k < actLines.length && k < 3; k++) { ctx.fillText(actLines[k], 50, y); y += 22; }
+  }
+  // Footer section
+  y = 710;
+  ctx.fillStyle = "#e7e5e4"; ctx.fillRect(30, y, 540, 1);
+  y += 28;
+  ctx.fillStyle = "#a8a29e"; ctx.font = "13px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText("不是「你能做什么工作」，而是「你想成为谁」。", 50, y);
+  y += 22;
+  ctx.fillText("来理想罗盘，写下你自己的答案 → qingming-123.github.io/ideal-compass", 50, y);
   // Download
   canvas.toBlob(function(blob) { var url = URL.createObjectURL(blob); var a = document.createElement("a"); a.href = url; a.download = "理想档案_分享卡.png"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); });
   var toast = document.createElement("div"); toast.className = "copied-toast"; toast.textContent = "分享卡片已下载！可以发朋友圈啦";

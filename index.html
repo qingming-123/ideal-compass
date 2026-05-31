@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>理想罗盘 — 发现你想成为什么样的人</title>
+<meta property="og:title" content="理想罗盘 — 发现你想成为什么样的人">
+<meta property="og:description" content="不是「你能做什么工作」，而是「你想成为谁」。一个帮你探索、规划和分享理想的互动工具。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="理想罗盘">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='none' stroke='%23d97706' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23d97706'/%3E%3Cpolygon points='32,4 36,28 32,25 28,28' fill='%23d97706'/%3E%3Cpolygon points='32,60 28,36 32,39 36,36' fill='%23d97706' opacity='0.5'/%3E%3Cpolygon points='4,32 28,28 25,32 28,36' fill='%23d97706' opacity='0.4'/%3E%3Cpolygon points='60,32 36,36 39,32 36,28' fill='%23d97706' opacity='0.4'/%3E%3C/svg%3E">
 <style>
   :root {
@@ -90,6 +94,21 @@
   hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
   .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+  /* Reading preference */
+  .reading-pref-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .reading-pref-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 16px; font-size: 0.75rem; cursor: pointer; background: var(--card); color: var(--fg2); transition: all 0.15s; font-family: inherit; }
+  .reading-pref-btn:hover { border-color: var(--accent-border); }
+  .reading-pref-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .book-links { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .book-link { font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; text-decoration: none; color: var(--accent); background: var(--accent-bg); transition: all 0.15s; }
+  .book-link:hover { background: var(--accent-border); }
+
+  /* Daily card */
+  .daily-card { border: 1.5px solid var(--accent-border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; background: linear-gradient(135deg, var(--accent-bg), #fff); }
+  .daily-card .daily-label { font-size: 0.72rem; font-weight: 650; letter-spacing: 0.04em; color: var(--accent); margin-bottom: 6px; text-transform: uppercase; }
+  .daily-card .daily-text { font-size: 0.95rem; line-height: 1.65; color: var(--fg); }
+  .daily-card .daily-source { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
 
   /* Book cards */
   .book-card { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: all 0.15s; }
@@ -237,26 +256,51 @@ const FRAME_DIMENSIONS = [
   { title: "心之所向", q: "你希望这个世界因为你的存在而有什么不同？", tags: ["更公平", "更美", "更高效", "更温暖", "更有趣", "更健康", "更智慧", "更自由"] }
 ];
 
+// ---- Reading Platforms ----
+const READING_PLATFORMS = {
+  weread: { name: "微信读书", icon: "📱", searchUrl: "https://weread.qq.com/web/search?key={}" },
+  jd: { name: "京东", icon: "📦", searchUrl: "https://search.jd.com/Search?keyword={}&enc=utf-8" },
+  dangdang: { name: "当当", icon: "📚", searchUrl: "http://search.dangdang.com/?key={}" },
+  douban: { name: "豆瓣读书", icon: "📝", searchUrl: "https://book.douban.com/subject_search?search_text={}" },
+  zlib: { name: "Z-Library", icon: "🌐", searchUrl: "https://zh.z-library.sk/s/{}" }
+};
+
 // ---- Ideal Books ----
 const BOOKS = [
-  { title: "活出生命的意义", author: "维克多·弗兰克尔", why: "一位从纳粹集中营幸存的心理学家，用一生证明：人可以在任何处境中找到意义。如果你觉得「我不知道为什么而活」，这本书是起点。", emoji: "📖", color: "#fef2f2" },
-  { title: "牧羊少年奇幻之旅", author: "保罗·柯艾略", why: "一个关于追随内心召唤的寓言。当你真正渴望某件事时，整个宇宙都会合力助你实现。短小、易读，但可能改变你看待理想的方式。", emoji: "🐪", color: "#fefce8" },
-  { title: "你想活出怎样的人生", author: "吉野源三郎", why: "一本在日本影响了几代人的书，借一个少年和舅舅的对话，探讨「人为什么活着」「什么是真正的价值」。宫崎骏的同名电影也由此而发。", emoji: "🌏", color: "#f0fdf4" },
-  { title: "被讨厌的勇气", author: "岸见一郎 / 古贺史健", why: "阿德勒心理学的通俗化解读。核心观点：你的现在不由过去决定，你的理想也不需要别人认可。如果你总在顾虑他人眼光，这本书是解药。", emoji: "🦁", color: "#fdf4ff" },
-  { title: "斯坦福大学人生设计课", author: "比尔·博内特 / 戴夫·伊万斯", why: "用设计思维面对人生——不是找到「唯一正确的路」，而是不断原型、测试、迭代。实操性极强，有很多可以立刻上手的练习。", emoji: "🎨", color: "#eff6ff" },
-  { title: "小王子", author: "安托万·德·圣-埃克苏佩里", why: "不是童书。关于什么才是「重要的事」，关于用心去看那些眼睛看不见的东西。当你被实用主义淹没时，回来读一读小王子。", emoji: "⭐", color: "#fff7ed" },
-  { title: "当我谈跑步时我谈些什么", author: "村上春树", why: "村上通过跑步反思写作和人生。他的核心洞察：持久的热情不是靠冲动，而是靠日复一日的纪律。理想不是激情，是习惯。", emoji: "🏃", color: "#f5f5f4" },
-  { title: "人类群星闪耀时", author: "斯蒂芬·茨威格", why: "14个改变世界的历史瞬间。读这本书会让你意识到：一个人的决定可以改变历史的走向。你不是旁观者，你是潜在的「群星」之一。", emoji: "✨", color: "#fefce8" }
+  { title: "活出生命的意义", author: "维克多·弗兰克尔", query: "活出生命的意义 弗兰克尔", why: "一位从纳粹集中营幸存的心理学家，用一生证明：人可以在任何处境中找到意义。如果你觉得「我不知道为什么而活」，这本书是起点。", emoji: "📖", color: "#fef2f2" },
+  { title: "牧羊少年奇幻之旅", author: "保罗·柯艾略", query: "牧羊少年奇幻之旅 柯艾略", why: "一个关于追随内心召唤的寓言。当你真正渴望某件事时，整个宇宙都会合力助你实现。短小、易读，但可能改变你看待理想的方式。", emoji: "🐪", color: "#fefce8" },
+  { title: "你想活出怎样的人生", author: "吉野源三郎", query: "你想活出怎样的人生 吉野源三郎", why: "一本在日本影响了几代人的书，借一个少年和舅舅的对话，探讨「人为什么活着」「什么是真正的价值」。宫崎骏的同名电影也由此而发。", emoji: "🌏", color: "#f0fdf4" },
+  { title: "被讨厌的勇气", author: "岸见一郎 / 古贺史健", query: "被讨厌的勇气 岸见一郎", why: "阿德勒心理学的通俗化解读。核心观点：你的现在不由过去决定，你的理想也不需要别人认可。如果你总在顾虑他人眼光，这本书是解药。", emoji: "🦁", color: "#fdf4ff" },
+  { title: "斯坦福大学人生设计课", author: "比尔·博内特 / 戴夫·伊万斯", query: "斯坦福大学人生设计课", why: "用设计思维面对人生——不是找到「唯一正确的路」，而是不断原型、测试、迭代。实操性极强，有很多可以立刻上手的练习。", emoji: "🎨", color: "#eff6ff" },
+  { title: "小王子", author: "安托万·德·圣-埃克苏佩里", query: "小王子 圣埃克苏佩里", why: "不是童书。关于什么才是「重要的事」，关于用心去看那些眼睛看不见的东西。当你被实用主义淹没时，回来读一读小王子。", emoji: "⭐", color: "#fff7ed" },
+  { title: "当我谈跑步时我谈些什么", author: "村上春树", query: "当我谈跑步时我谈些什么 村上春树", why: "村上通过跑步反思写作和人生。他的核心洞察：持久的热情不是靠冲动，而是靠日复一日的纪律。理想不是激情，是习惯。", emoji: "🏃", color: "#f5f5f4" },
+  { title: "人类群星闪耀时", author: "斯蒂芬·茨威格", query: "人类群星闪耀时 茨威格", why: "14个改变世界的历史瞬间。读这本书会让你意识到：一个人的决定可以改变历史的走向。你不是旁观者，你是潜在的「群星」之一。", emoji: "✨", color: "#fefce8" }
+];
+
+// ---- Daily Inspiration Cards ----
+const DAILY_CARDS = [
+  { type: "quote", text: "「人生中最大的危险，就是太早找到一个正确答案。」", source: "—— 詹姆斯·卡斯 《有限与无限的游戏》" },
+  { type: "question", text: "如果今天是你生命中的最后一年，你还会做你现在正在做的事吗？如果不会，那你想做什么？", source: "" },
+  { type: "fact", text: "全球有 2.58 亿儿童和青少年失学。如果你擅长教、写、编程或讲故事——你知道你的理想可能和这个数字有关吗？", source: "" },
+  { type: "quote", text: "「二十岁时你有一张你想要成为什么样的人的脸，三十岁时你有一张你值得成为什么样的人的脸。」", source: "—— 加缪" },
+  { type: "question", text: "你羡慕的那些人——他们过的生活里，具体是哪一点触动了你？那个触动的背后，藏着你自己的理想。", source: "" },
+  { type: "quote", text: "「我们需要的不是在地图上找到出路，而是有勇气走进未知的森林。」", source: "—— 赫尔曼·黑塞" },
+  { type: "fact", text: "地球上 80 亿人中，近一半从未使用过互联网。你在这个「已连接」的世界里掌握的技能，能为「未连接」的那一半做些什么？", source: "" },
+  { type: "question", text: "你 80 岁的时候，最希望回忆起的一件事是什么？你现在距离那件事，还有多远？", source: "" },
+  { type: "quote", text: "「成为你本可以成为的人，永远不会太晚。」", source: "—— 乔治·艾略特" },
+  { type: "fact", text: "全球碳排放的 50% 来自最富裕的 10% 人口。如果你关心公平或自然——你在哪里可以成为解决方案的一部分？", source: "" },
+  { type: "question", text: "如果没有任何人评价你——没有父母的期待、没有社会的标准——你想成为什么样的人？", source: "" },
+  { type: "quote", text: "「人不是生来就要被打败的。一个人可以被毁灭，但不能被打败。」", source: "—— 海明威 《老人与海》" }
 ];
 
 // ---- Grand Narratives ----
 const NARRATIVES = [
-  { number: "7.35亿", fact: "全球有7.35亿人面临饥饿", detail: "相当于每10个人中就有1个人不知道下一顿饭在哪里。不是因为食物不够——全球生产的食物足以喂饱所有人。是分配、冲突、气候和不公让粮食到不了需要的人手里。", reflection: "如果你拥有组织资源、制定政策、搭建系统或传播信息的能力——你愿意为改变这个数字做什么？", emoji: "🌾" },
-  { number: "2.58亿", fact: "全球有2.58亿儿童和青少年失学", detail: "其中大多数集中在撒哈拉以南非洲和南亚。这不是因为他们不想学习——是因为贫穷、战争、性别歧视。教育是打破贫困循环最有效的方式，但它偏偏最不容易到达需要它的人。", reflection: "如果你擅长教学、写作、技术或组织——有什么方式是你可以把知识送到那些去不了学校的孩子面前的？", emoji: "📚" },
-  { number: "80亿", fact: "地球上住着80亿人，但有近一半人从未使用过互联网", detail: "数字鸿沟比我们想象的大得多。在部分非洲国家，上网率不到20%。这意味着全球近一半的声音、创意和潜力从未被世界听到。", reflection: "如果你懂得技术、设计或内容创作——你愿意为「连接另一半世界」做点什么？", emoji: "🌐" },
-  { number: "100万", fact: "每年有100万物种面临灭绝威胁", detail: "根据IPBES报告，地球上约八分之一的物种正面临灭绝风险。这不是遥远的未来——它正在发生。森林在消失，海洋在酸化，昆虫在减少。生物多样性是人类生存的基础。", reflection: "如果你关心自然、擅长科学或传播——你愿意用什么方式成为这个星球的守护者？", emoji: "🦋" },
-  { number: "50%", fact: "全球碳排放的50%来自最富裕的10%人口", detail: "气候变化是不平等的放大器：碳排放最少的最贫困国家，承受着最大的气候灾难——洪水、干旱、飓风。富人制造问题，穷人承受后果。", reflection: "如果你关心公平、懂得技术或政策——你能做什么来推动一个更可持续也更公正的世界？", emoji: "🌍" },
-  { number: "1/3", fact: "全球三分之一的女性曾遭遇暴力", detail: "根据WHO的数据，这是全球最普遍但最不被看见的人权危机之一。它发生在每个国家、每个阶层。改变它需要的不是单一的英雄，而是无数人从各自的位置上推动文化、法律和观念的变化。", reflection: "无论你的性别——如果你在乎公平、安全和尊严，你可以在哪里发挥作用？", emoji: "🤲" }
+  { number: "7.35亿", fact: "全球有7.35亿人面临饥饿", detail: "相当于每10个人中就有1个人不知道下一顿饭在哪里。不是因为食物不够——全球生产的食物足以喂饱所有人。是分配、冲突、气候和不公让粮食到不了需要的人手里。", reflection: "如果你拥有组织资源、制定政策、搭建系统或传播信息的能力——你愿意为改变这个数字做什么？", emoji: "🌾", moreLink: "https://zh.wikipedia.org/wiki/饑荒", moreLabel: "维基百科：饥荒" },
+  { number: "2.58亿", fact: "全球有2.58亿儿童和青少年失学", detail: "其中大多数集中在撒哈拉以南非洲和南亚。这不是因为他们不想学习——是因为贫穷、战争、性别歧视。教育是打破贫困循环最有效的方式，但它偏偏最不容易到达需要它的人。", reflection: "如果你擅长教学、写作、技术或组织——有什么方式是你可以把知识送到那些去不了学校的孩子面前的？", emoji: "📚", moreLink: "https://www.unicef.org/zh/教育", moreLabel: "UNICEF：全球教育" },
+  { number: "80亿", fact: "地球上住着80亿人，但有近一半人从未使用过互联网", detail: "数字鸿沟比我们想象的大得多。在部分非洲国家，上网率不到20%。这意味着全球近一半的声音、创意和潜力从未被世界听到。", reflection: "如果你懂得技术、设计或内容创作——你愿意为「连接另一半世界」做点什么？", emoji: "🌐", moreLink: "https://zh.wikipedia.org/wiki/数字鸿沟", moreLabel: "维基百科：数字鸿沟" },
+  { number: "100万", fact: "每年有100万物种面临灭绝威胁", detail: "根据IPBES报告，地球上约八分之一的物种正面临灭绝风险。这不是遥远的未来——它正在发生。森林在消失，海洋在酸化，昆虫在减少。生物多样性是人类生存的基础。", reflection: "如果你关心自然、擅长科学或传播——你愿意用什么方式成为这个星球的守护者？", emoji: "🦋", moreLink: "https://zh.wikipedia.org/wiki/生物多样性", moreLabel: "维基百科：生物多样性" },
+  { number: "50%", fact: "全球碳排放的50%来自最富裕的10%人口", detail: "气候变化是不平等的放大器：碳排放最少的最贫困国家，承受着最大的气候灾难——洪水、干旱、飓风。富人制造问题，穷人承受后果。", reflection: "如果你关心公平、懂得技术或政策——你能做什么来推动一个更可持续也更公正的世界？", emoji: "🌍", moreLink: "https://zh.wikipedia.org/wiki/气候变化", moreLabel: "维基百科：气候变化" },
+  { number: "1/3", fact: "全球三分之一的女性曾遭遇暴力", detail: "根据WHO的数据，这是全球最普遍但最不被看见的人权危机之一。它发生在每个国家、每个阶层。改变它需要的不是单一的英雄，而是无数人从各自的位置上推动文化、法律和观念的变化。", reflection: "无论你的性别——如果你在乎公平、安全和尊严，你可以在哪里发挥作用？", emoji: "🤲", moreLink: "https://www.unwomen.org/zh", moreLabel: "联合国妇女署" }
 ];
 
 // ---- Resource Map (value → recommended resources) ----
@@ -309,6 +353,8 @@ function loadActionPlan() { const raw = localStorage.getItem("ic_actionplan"); r
 function saveActionPlan(p) { localStorage.setItem("ic_actionplan", JSON.stringify(p)); }
 function loadNickname() { return localStorage.getItem("ic_nickname") || ""; }
 function saveNickname(n) { localStorage.setItem("ic_nickname", n); }
+function loadReadingPref() { return localStorage.getItem("ic_readingpref") || "weread"; }
+function saveReadingPref(p) { localStorage.setItem("ic_readingpref", p); }
 
 // ============================================================
 // NAVIGATION
@@ -347,60 +393,30 @@ function renderHomeTab() {
   else if (homeTab === "narratives") renderNarrativesTab(container);
 }
 
+function getDailyCard() {
+  var today = new Date().toISOString().slice(0, 10);
+  var hash = 0;
+  for (var i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
+  var idx = Math.abs(hash) % DAILY_CARDS.length;
+  return DAILY_CARDS[idx];
+}
 function renderPathsTab(container) {
-  container.innerHTML = `
-    <h1>你想成为<br>什么样的人？</h1>
-    <p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>
-    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p>
-    <div class="path-grid">
-      ${Object.entries(PATH_META).map(([key, m]) => `
-        <div class="path-card" onclick="startPath('${key}')">
-          <span class="emoji">${m.emoji}</span>
-          <span class="title">${m.name}</span>
-          <span class="hint">${m.desc.slice(0, 50)}……</span>
-        </div>
-      `).join("")}
-    </div>
-  `;
+  var dc = getDailyCard();
+  var dailyHtml = '<div class="daily-card"><div class="daily-label">' + (dc.type === 'quote' ? '今日一语' : dc.type === 'question' ? '今日一问' : '今日视野') + '</div><p class="daily-text">' + escapeHtml(dc.text) + '</p>' + (dc.source ? '<p class="daily-source">' + escapeHtml(dc.source) + '</p>' : '') + '</div>';
+  container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji">' + m.emoji + '</span><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span></div>'; }).join("") + '</div>';
+}
 }
 
 function renderBooksTab(container) {
-  container.innerHTML = `
-    <h1>理想之书</h1>
-    <p class="sub">有些书不教你技能，而是帮你看到自己。以下是我们精选的八本与理想、意义和人生方向有关的书。</p>
-    ${BOOKS.map(b => `
-      <div class="book-card">
-        <div class="book-cover" style="background:${b.color};">${b.emoji}</div>
-        <div class="book-info">
-          <div class="book-title">${escapeHtml(b.title)}</div>
-          <div class="book-author">${escapeHtml(b.author)}</div>
-          <div class="book-why">「${escapeHtml(b.why)}」</div>
-        </div>
-      </div>
-    `).join("")}
-    <p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">读完任何一本，回来用「静思」路径写下你的感受。</p>
-    <button class="btn btn-outline" onclick="switchHomeTab('paths')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>
-  `;
+  var pref = loadReadingPref();
+  var platforms = Object.entries(READING_PLATFORMS);
+  container.innerHTML = '<h1>理想之书</h1><p class="sub">有些书不教你技能，而是帮你看到自己。以下是我们精选的八本与理想、意义和人生方向有关的书。</p><div class="reading-pref-bar"><span style="font-size:0.78rem;color:var(--muted);margin-right:4px;">你习惯在哪里看书？</span>' + platforms.map(function(p) { var key = p[0], pl = p[1]; return '<span class="reading-pref-btn ' + (pref === key ? 'active' : '') + '" onclick="setReadingPref(\'' + key + '\')">' + pl.icon + ' ' + pl.name + '</span>'; }).join("") + '</div>' + BOOKS.map(function(b) { var pl = READING_PLATFORMS[pref] || READING_PLATFORMS["weread"]; var url = pl.searchUrl.replace("{}", encodeURIComponent(b.query)); return '<div class="book-card"><div class="book-cover" style="background:' + b.color + ';">' + b.emoji + '</div><div class="book-info"><div class="book-title">' + escapeHtml(b.title) + '</div><div class="book-author">' + escapeHtml(b.author) + '</div><div class="book-why">「' + escapeHtml(b.why) + '」</div><div class="book-links"><a class="book-link" href="' + url + '" target="_blank" rel="noopener">' + pl.icon + ' ' + pl.name + '</a>' + platforms.filter(function(p) { return p[0] !== pref; }).slice(0, 2).map(function(p) { var pu = p[1].searchUrl.replace("{}", encodeURIComponent(b.query)); return '<a class="book-link" href="' + pu + '" target="_blank" rel="noopener">' + p[1].icon + '</a>'; }).join("") + '</div></div></div>'; }).join("") + '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">读完任何一本，回来用「静思」路径写下你的感受。</p><button class="btn btn-outline" onclick="switchHomeTab(\'paths\')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>';
 }
 
+function setReadingPref(key) { saveReadingPref(key); renderHomeTab(); }
+
 function renderNarrativesTab(container) {
-  container.innerHTML = `
-    <h1>宏大叙事</h1>
-    <p class="sub">这个世界很大，大到每个人的理想都能找到一个值得的方向。以下是一些正在发生的事实——也许其中一个会唤醒你想做的事。</p>
-    ${NARRATIVES.map(n => `
-      <div class="narrative-card">
-        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;">
-          <span style="font-size:1.5rem;">${n.emoji}</span>
-          <span class="narrative-number">${escapeHtml(n.number)}</span>
-        </div>
-        <p class="narrative-fact">${escapeHtml(n.fact)}</p>
-        <p class="narrative-detail">${escapeHtml(n.detail)}</p>
-        <p class="narrative-reflection">「${escapeHtml(n.reflection)}」</p>
-      </div>
-    `).join("")}
-    <p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">看到让你心动的方向？回到「寻路」选一条路径开始探索。</p>
-    <button class="btn btn-outline" onclick="switchHomeTab('paths')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>
-  `;
+  container.innerHTML = '<h1>宏大叙事</h1><p class="sub">这个世界很大，大到每个人的理想都能找到一个值得的方向。以下是一些正在发生的事实——也许其中一个会唤醒你想做的事。</p>' + NARRATIVES.map(function(n) { return '<div class="narrative-card"><div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;"><span style="font-size:1.5rem;">' + n.emoji + '</span><span class="narrative-number">' + escapeHtml(n.number) + '</span></div><p class="narrative-fact">' + escapeHtml(n.fact) + '</p><p class="narrative-detail">' + escapeHtml(n.detail) + '</p><p class="narrative-reflection">「' + escapeHtml(n.reflection) + '」</p><a class="book-link" href="' + n.moreLink + '" target="_blank" rel="noopener" style="margin-top:8px;display:inline-block;">🔗 ' + escapeHtml(n.moreLabel) + '</a></div>'; }).join("") + '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">看到让你心动的方向？回到「寻路」选一条路径开始探索。</p><button class="btn btn-outline" onclick="switchHomeTab(\'paths\')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>';
 }
 
 // ============================================================

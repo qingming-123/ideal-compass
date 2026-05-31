@@ -297,6 +297,14 @@ const OBSERVE_PRESETS = [
   "第三个故事说出了我的心里话——我不想变麻木，我要保持好奇和柔软。",
   "三个故事都很好，但我有自己不同的方向。"
 ];
+const DIALOGUE_PRESETS = [
+  ["上周帮朋友解决了一个实际问题，看到对方如释重负的表情。", "写了一段自己满意的文字或代码，进入心流状态。", "参加了一次志愿活动，虽然累但觉得有意义。", "和一个陌生人深度聊天，分享了一些从未对人说过的话。"],
+  ["是事情本身吸引我——我喜欢那个沉浸其中的过程。", "是结果让我满足——看到自己的努力产生了具体的影响。", "两者都有——过程很享受，结果也让我确认了自己在做对的事。"],
+  ["会的。即使没有人知道是我做的，我还是会做。", "可能不会。如果没有人认可，我可能会怀疑这件事的意义。", "不确定。我可能需要重新想想到底什么对我最重要。"],
+  ["我想花十年时间研究一个我真正好奇的问题，不管有没有用。", "我想建立一个连接人和资源的组织，让更多人找到属于自己的路。", "我想创作——写书、拍片、做音乐，留下一些能超越我生命的东西。", "我想走遍世界，和不同文化的人交流，记录那些被忽略的故事。"],
+  ["其实我还没开始。我只是在想。", "我一直在业余时间自学相关的技能，虽然进展很慢。", "我已经和几个做这件事的人聊过了，开始摸清楚门路。", "我正在存钱/做计划，准备明年迈出第一步。"],
+  ["立刻行动——哪怕只是发一封邮件、打一个电话、查一个信息。", "对自己诚实——承认现在做的事情不是我真正想要的，然后开始调整方向。", "找到一个已经在这条路上的人，和他/她聊聊，请教第一步应该怎么走。", "写下我要做的事，告诉一个我信任的人，让他/她监督我。"]
+];
 const ACT_PRESETS = [
   ["做完之后发现比想象中简单，那个投入的过程让我忘了时间。", "过程中有点困难，但完成后很有成就感。", "不太确定感觉如何，但我很高兴自己至少试了。", "发现我可能并不真的喜欢这件事，这也是收获。"],
   ["我发现自己最享受的时刻都是在创造——写、画、做东西。", "高峰时刻几乎都和人有关——聊天、聚会、帮助别人。", "我的高峰时刻很奇怪，都是在一个人深度思考或学习的时候。", "规律似乎不明显，我需要再观察一段时间。"],
@@ -544,7 +552,9 @@ function renderDialogueStep(card) {
   var dots = ""; for (var i = 0; i < total; i++) { dots += '<div class="step-dot ' + (i < step ? 'done' : i === step ? 'current' : '') + '"></div>'; }
   var hist = "";
   if (dialogueHistory.length > 0) { hist = '<div style="margin-bottom:20px;padding:16px;background:#fafaf9;border-radius:var(--radius-sm);max-height:200px;overflow-y:auto;">'; dialogueHistory.forEach(function(h) { hist += '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:2px;">—— 我问：</p><p style="font-size:0.88rem;margin-bottom:8px;">' + escapeHtml(h.q) + '</p><p style="font-size:0.82rem;color:var(--muted);margin-bottom:2px;">—— 你答：</p><p style="font-size:0.88rem;margin-bottom:14px;color:var(--fg2);">' + escapeHtml(h.a) + '</p>'; }); hist += '</div>'; }
-  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>对话 ' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div>' + hist + '<p class="prompt-question">' + escapeHtml(q.q) + '</p><textarea class="text-input" id="dialogue-answer" placeholder="想到什么就写什么……">' + escapeHtml(prev) + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="dialogueBack()" ' + (currentStep <= 1 ? 'disabled' : '') + '>返回</button><button class="btn btn-primary" onclick="saveDialogueAnswer(' + step + ')">' + (step < total - 1 ? '继续' : '完成') + '</button></div></div>';
+  var dPresets = DIALOGUE_PRESETS[step] || [];
+  var dPresetHtml = '<div class="tag-group" style="margin-top:4px;">' + dPresets.map(function(pre) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'dialogue-answer\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 30)) + (pre.length > 30 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div>';
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>对话 ' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div>' + hist + '<p class="prompt-question">' + escapeHtml(q.q) + '</p><textarea class="text-input" id="dialogue-answer" placeholder="想到什么就写什么……">' + escapeHtml(prev) + '</textarea>' + dPresetHtml + '<div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="dialogueBack()" ' + (currentStep <= 1 ? 'disabled' : '') + '>返回</button><button class="btn btn-primary" onclick="saveDialogueAnswer(' + step + ')">' + (step < total - 1 ? '继续' : '完成') + '</button></div></div>';
   setTimeout(function() { var ta = document.getElementById("dialogue-answer"); if (ta) ta.focus(); }, 100);
 }
 function saveDialogueAnswer(step) {

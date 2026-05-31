@@ -277,6 +277,32 @@ const REVERSE_PROMPTS = [
   { q: "有没有一件事你一直在逃避，但内心深处知道'如果我做了，我会更接近我想成为的人'？是什么？", hint: "逃避比失败消耗更多能量。直面它。" }
 ];
 
+// Preset answers for exploration questions
+const REFLECT_PRESETS = [
+  ["观察昆虫/植物", "一个人搭积木或拼图", "给家人讲故事或表演", "拆东西再装回去（不一定成功）", "看书看到忘记时间"],
+  ["羡慕朋友总能自然地和任何人聊天", "羡慕那些能靠画画/音乐表达自己的人", "羡慕那些说走就走去冒险的人", "羡慕能把复杂事情讲清楚的人", "羡慕对工作充满热情的长辈"],
+  ["开一家自己的小店/工作室", "写一本书或拍一部短片", "环游世界，边走边记录", "建立一个帮助别人的组织", "学一门完全不同的手艺"],
+  ["希望自己是一个对别人有用的人", "希望自己没有因为害怕而退缩过", "希望自己活得尽兴，没白来一趟", "希望有人因为我的存在过得更好"],
+  ["和朋友深夜聊天，完全忘记时间", "做一道难题做到废寝忘食", "帮助别人后看到对方的笑容", "完成一件自己满意的作品", "一个人在山里或海边，感到无比平静"]
+];
+const REVERSE_PRESETS = [
+  ["每天重复同样的事，眼睛没有光的人", "在饭局上不停抱怨但什么都不改变的人", "年轻时有很多梦想但一个都没试过的长辈", "为了钱做自己完全不喜欢的事的人", "对什么都不再好奇、不再学习的人"],
+  ["变成一个麻木的、不再对任何事感到兴奋的人", "变成一个把所有时间都花在不喜欢的工作上的人", "变成一个不再读书、不再思考、只是消耗时间的人", "变成一个和朋友们渐渐疏远、孤独终老的人"],
+  ["勇敢尝试新事物的人", "对生活保持热情和好奇的人", "把时间和精力投入热爱之事的人", "真诚地连接他人的人"],
+  ["换个工作/专业，但一直不敢行动", "公开表达自己的想法或作品", "和某个重要的人说一句一直没说出口的话", "一个人去旅行，不设行程", "开始学一个一直觉得「太晚了」的技能"]
+];
+const OBSERVE_PRESETS = [
+  "第一个故事触动了我——我也想用自己擅长的方式真诚地连接他人。",
+  "第二个故事让我有共鸣——我想做那个把资源和机会连接起来的人。",
+  "第三个故事说出了我的心里话——我不想变麻木，我要保持好奇和柔软。",
+  "三个故事都很好，但我有自己不同的方向。"
+];
+const ACT_PRESETS = [
+  ["做完之后发现比想象中简单，那个投入的过程让我忘了时间。", "过程中有点困难，但完成后很有成就感。", "不太确定感觉如何，但我很高兴自己至少试了。", "发现我可能并不真的喜欢这件事，这也是收获。"],
+  ["我发现自己最享受的时刻都是在创造——写、画、做东西。", "高峰时刻几乎都和人有关——聊天、聚会、帮助别人。", "我的高峰时刻很奇怪，都是在一个人深度思考或学习的时候。", "规律似乎不明显，我需要再观察一段时间。"],
+  ["对方说，最重要的不是选择哪条路，而是选择之后怎么走。", "让我意外的是，对方说他也曾经迷茫了好几年，并不是一开始就清楚的。", "对方说了一句让我震住的话：'如果你明天就要死，你今天干嘛还要做你不喜欢的事？'"],
+  ["那个平行世界里的我拥有的是勇气，现在这个我拥有的是稳定。", "如果当时选了另一条路，我可能会更自由，但也会失去现在拥有的安全感。", "我发现不管哪条路，其实都有各自的好和坏，没有完美的选择。"]
+];
 const FRAME_DIMENSIONS = [
   { title: "能量来源", q: "什么样的事情让你精力充沛而不是疲惫？", tags: ["独自思考", "与人交流", "创造东西", "解决问题", "组织协调", "动手操作", "学习新知", "帮助他人"] },
   { title: "核心恐惧", q: "你最害怕自己的人生变成什么样子？", tags: ["一事无成", "失去自由", "被人遗忘", "平庸度日", "伤害他人", "孤独终老", "没有意义", "停滞不前"] },
@@ -494,7 +520,9 @@ function advanceExplore() {
 function renderReflectStep(card) {
   var idx = currentStep - 1, p = REFLECT_PROMPTS[idx], total = REFLECT_PROMPTS.length, prev = answers["reflect_" + idx] || "";
   var dots = ""; for (var i = 0; i < total; i++) { dots += '<div class="step-dot ' + (i < idx ? 'done' : i === idx ? 'current' : '') + '"></div>'; }
-  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><p class="prompt-question">' + escapeHtml(p.q) + '</p><p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">' + escapeHtml(p.hint) + '</p><textarea class="text-input" id="reflect-answer" placeholder="写下你真实的感受……">' + escapeHtml(prev) + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一题</button><button class="btn btn-primary" onclick="saveReflectAnswer(' + idx + ')">' + (idx < total - 1 ? '下一题' : '完成') + '</button></div></div>';
+  var presets = REFLECT_PRESETS[idx] || [];
+  var presetHtml = '<div class="tag-group" style="margin-top:4px;">' + presets.map(function(pre, pi) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'reflect-answer\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 30)) + (pre.length > 30 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div>';
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><p class="prompt-question">' + escapeHtml(p.q) + '</p><p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">' + escapeHtml(p.hint) + '</p><textarea class="text-input" id="reflect-answer" placeholder="写下你真实的感受……">' + escapeHtml(prev) + '</textarea>' + presetHtml + '<div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一题</button><button class="btn btn-primary" onclick="saveReflectAnswer(' + idx + ')">' + (idx < total - 1 ? '下一题' : '完成') + '</button></div></div>';
   setTimeout(function() { var ta = document.getElementById("reflect-answer"); if (ta) ta.focus(); }, 100);
 }
 function saveReflectAnswer(idx) { answers["reflect_" + idx] = document.getElementById("reflect-answer").value.trim(); advanceExplore(); }
@@ -503,7 +531,7 @@ function saveReflectAnswer(idx) { answers["reflect_" + idx] = document.getElemen
 function renderActStep(card) {
   var idx = currentStep - 1, exp = ACT_EXPERIMENTS[idx], total = ACT_EXPERIMENTS.length, prev = answers["act_" + idx] || "";
   var dots = ""; for (var i = 0; i < total; i++) { dots += '<div class="step-dot ' + (i < idx ? 'done' : i === idx ? 'current' : '') + '"></div>'; }
-  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>实验 ' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><div style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;"><span style="font-weight:700;font-size:1rem;">🧪 ' + escapeHtml(exp.title) + '</span><p style="font-size:0.9rem;color:var(--fg2);margin-top:6px;">' + escapeHtml(exp.desc) + '</p></div><p class="prompt-question" style="font-size:1rem;">' + escapeHtml(exp.q) + '</p><textarea class="text-input" id="act-answer" placeholder="做完实验后，回来写下你的感受……">' + escapeHtml(prev) + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一个实验</button><button class="btn btn-primary" onclick="saveActAnswer(' + idx + ')">' + (idx < total - 1 ? '下一个实验' : '完成') + '</button></div></div>';
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>实验 ' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><div style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;"><span style="font-weight:700;font-size:1rem;">🧪 ' + escapeHtml(exp.title) + '</span><p style="font-size:0.9rem;color:var(--fg2);margin-top:6px;">' + escapeHtml(exp.desc) + '</p></div><p class="prompt-question" style="font-size:1rem;">' + escapeHtml(exp.q) + '</p><textarea class="text-input" id="act-answer" placeholder="做完实验后，回来写下你的感受……">' + escapeHtml(prev) + '</textarea><div class="tag-group" style="margin-top:4px;">' + (ACT_PRESETS[idx] || []).map(function(pre) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'act-answer\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 30)) + (pre.length > 30 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一个实验</button><button class="btn btn-primary" onclick="saveActAnswer(' + idx + ')">' + (idx < total - 1 ? '下一个实验' : '完成') + '</button></div></div>';
 }
 function saveActAnswer(idx) { answers["act_" + idx] = document.getElementById("act-answer").value.trim(); advanceExplore(); }
 
@@ -528,10 +556,11 @@ function dialogueBack() { if (currentStep > 1) { dialogueHistory.pop(); currentS
 
 // --- Observe ---
 function renderObserveStep(card) {
-  card.innerHTML = '<div class="fade-in"><p class="prompt-question">阅读这些真实的理想档案</p><p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">点击任何一个让你有共鸣的，或者全部读完再做决定。</p><div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">' + SAMPLE_PROFILES.map(function(p, i) { return '<div class="persona-card" onclick="observePick(' + i + ')" id="observe-' + i + '" style="cursor:pointer;"><div class="persona-header"><span class="persona-name">' + escapeHtml(p.name) + '</span></div><p class="persona-statement" style="-webkit-line-clamp:unset;">' + escapeHtml(p.statement) + '</p><div class="tag-group" style="margin-top:8px;">' + p.values.map(function(v) { return '<span class="tag-btn picked" style="cursor:default;font-size:0.78rem;padding:4px 12px;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div>'; }).join("") + '</div><p class="prompt-question" style="font-size:1rem;">哪一份档案最触动你？为什么？有没有哪句话让你觉得「这也是我想说的」？</p><textarea class="text-input" id="observe-reflection" placeholder="写下你的感受……">' + escapeHtml(answers["observe_reflection"] || "") + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="navigate(\'home\')">返回</button><button class="btn btn-primary" onclick="saveObserveAnswer()">生成我的理想档案</button></div></div>';
+  card.innerHTML = '<div class="fade-in"><p class="prompt-question">阅读这些真实的理想档案</p><p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">点击任何一个让你有共鸣的，或者全部读完再做决定。</p><div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">' + SAMPLE_PROFILES.map(function(p, i) { return '<div class="persona-card" onclick="observePick(' + i + ')" id="observe-' + i + '" style="cursor:pointer;"><div class="persona-header"><span class="persona-name">' + escapeHtml(p.name) + '</span></div><p class="persona-statement" style="-webkit-line-clamp:unset;">' + escapeHtml(p.statement) + '</p><div class="tag-group" style="margin-top:8px;">' + p.values.map(function(v) { return '<span class="tag-btn picked" style="cursor:default;font-size:0.78rem;padding:4px 12px;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div>'; }).join("") + '</div><p class="prompt-question" style="font-size:1rem;">哪一份档案最触动你？为什么？有没有哪句话让你觉得「这也是我想说的」？</p><textarea class="text-input" id="observe-reflection" placeholder="写下你的感受……">' + escapeHtml(answers["observe_reflection"] || "") + '</textarea><div class="tag-group" style="margin-top:4px;">' + OBSERVE_PRESETS.map(function(pre) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'observe-reflection\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 32)) + (pre.length > 32 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="navigate(\'home\')">返回</button><button class="btn btn-primary" onclick="saveObserveAnswer()">生成我的理想档案</button></div></div>';
 }
 function observePick(i) { observedIdx = i; document.querySelectorAll("[id^='observe-']").forEach(function(el) { el.style.borderColor = "var(--border)"; }); var el = document.getElementById("observe-" + i); if (el) el.style.borderColor = "var(--accent)"; }
 function saveObserveAnswer() { answers["observe_reflection"] = document.getElementById("observe-reflection").value.trim(); if (observedIdx !== null) answers["observe_picked"] = observedIdx; advanceExplore(); }
+function fillTextarea(id, text) { var ta = document.getElementById(id); if (ta) { ta.value = text; ta.focus(); } }
 
 // --- Frame ---
 function renderFrameStep(card) {
@@ -546,7 +575,9 @@ function saveFrameAnswer(idx) { advanceExplore(); }
 function renderReverseStep(card) {
   var idx = currentStep - 1, p = REVERSE_PROMPTS[idx], total = REVERSE_PROMPTS.length, prev = answers["reverse_" + idx] || "";
   var dots = ""; for (var i = 0; i < total; i++) { dots += '<div class="step-dot ' + (i < idx ? 'done' : i === idx ? 'current' : '') + '"></div>'; }
-  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><p class="prompt-question">' + escapeHtml(p.q) + '</p><p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">' + escapeHtml(p.hint) + '</p><textarea class="text-input" id="reverse-answer" placeholder="写下你真实的感受……">' + escapeHtml(prev) + '</textarea><div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一题</button><button class="btn btn-primary" onclick="saveReverseAnswer(' + idx + ')">' + (idx < total - 1 ? '下一题' : '完成') + '</button></div></div>';
+  var presets = REVERSE_PRESETS[idx] || [];
+  var presetHtml = '<div class="tag-group" style="margin-top:4px;">' + presets.map(function(pre) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'reverse-answer\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 30)) + (pre.length > 30 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div>';
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>' + currentStep + ' / ' + (total + 1) + '</span><div class="step-dot-row">' + dots + '</div></div><p class="prompt-question">' + escapeHtml(p.q) + '</p><p style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;">' + escapeHtml(p.hint) + '</p><textarea class="text-input" id="reverse-answer" placeholder="写下你真实的感受……">' + escapeHtml(prev) + '</textarea>' + presetHtml + '<div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="currentStep--;renderExploreStep();" ' + (currentStep <= 1 ? 'disabled' : '') + '>上一题</button><button class="btn btn-primary" onclick="saveReverseAnswer(' + idx + ')">' + (idx < total - 1 ? '下一题' : '完成') + '</button></div></div>';
   setTimeout(function() { var ta = document.getElementById("reverse-answer"); if (ta) ta.focus(); }, 100);
 }
 function saveReverseAnswer(idx) { answers["reverse_" + idx] = document.getElementById("reverse-answer").value.trim(); advanceExplore(); }
@@ -559,7 +590,9 @@ function buildProfileFromAnswers() { renderBuildProfile(document.getElementById(
 
 function renderBuildProfile(card) {
   var syn = synthesizeProfile();
-  card.innerHTML = '<div class="fade-in"><div style="text-align:center;margin-bottom:24px;"><span style="font-size:3rem;display:block;margin-bottom:8px;">✨</span><h2>你的理想档案 · 初稿</h2><p style="color:var(--fg2);font-size:0.9rem;">根据你的回答，这是你的理想草图。你可以修改任何部分。</p></div><div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><h3 style="color:var(--accent);">🎯 你想成为什么样的人？</h3><p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">用一句话回答——这句话会出现在你的分享卡片上，也会让朋友一眼看懂你的方向。</p><textarea class="text-input" id="profile-answer" style="min-height:60px;font-size:1.1rem;font-weight:600;" placeholder="我想成为……">' + escapeHtml(syn.answer || "") + '</textarea></div><div class="profile-section"><h3>核心陈述（展开说说）</h3><textarea class="text-input" id="profile-statement" style="min-height:120px;">' + escapeHtml(syn.statement) + '</textarea></div><div class="profile-section"><h3>对你重要的价值</h3><div class="tag-group" id="profile-values">' + ["自由", "创造", "连接", "成长", "公平", "美", "智慧", "温暖", "独立", "影响", "安全", "冒险", "真实", "平衡", "卓越"].map(function(v) { return '<span class="tag-btn ' + (syn.values.indexOf(v) >= 0 ? 'picked' : '') + '" onclick="this.classList.toggle(\'picked\')">' + v + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我接下来的实验 / 行动</h3><textarea class="text-input" id="profile-actions" style="min-height:80px;" placeholder="接下来你打算做什么来验证或接近这个理想？">' + escapeHtml(syn.actions) + '</textarea></div><div style="display:flex;gap:10px;justify-content:center;margin-top:20px;"><button class="btn btn-outline" onclick="currentStep=0;renderExploreStep();">重新探索</button><button class="btn btn-primary" onclick="finalizeProfile()">保存我的理想档案</button></div></div>';
+  var answerPresets = generateAnswerPresets(syn);
+  var answerPresetHtml = '<div class="tag-group" style="margin-top:4px;">' + answerPresets.map(function(pre) { return '<span class="tag-btn" style="font-size:0.78rem;padding:5px 10px;cursor:pointer;" onclick="fillTextarea(\'profile-answer\',\'' + escapeHtml(pre).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.slice(0, 35)) + (pre.length > 35 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（AI 根据你的回答生成，点击填入，可修改）</span></div>';
+  card.innerHTML = '<div class="fade-in"><div style="text-align:center;margin-bottom:24px;"><span style="font-size:3rem;display:block;margin-bottom:8px;">✨</span><h2>你的理想档案 · 初稿</h2><p style="color:var(--fg2);font-size:0.9rem;">根据你的回答，这是你的理想草图。你可以修改任何部分。</p></div><div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><h3 style="color:var(--accent);">🎯 你想成为什么样的人？</h3><p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">用一句话回答——这句话会出现在你的分享卡片上，也会让朋友一眼看懂你的方向。</p><textarea class="text-input" id="profile-answer" style="min-height:60px;font-size:1.1rem;font-weight:600;" placeholder="我想成为……">' + escapeHtml(syn.answer || "") + '</textarea>' + answerPresetHtml + '</div><div class="profile-section"><h3>核心陈述（展开说说）</h3><textarea class="text-input" id="profile-statement" style="min-height:120px;">' + escapeHtml(syn.statement) + '</textarea></div><div class="profile-section"><h3>对你重要的价值</h3><div class="tag-group" id="profile-values">' + ["自由", "创造", "连接", "成长", "公平", "美", "智慧", "温暖", "独立", "影响", "安全", "冒险", "真实", "平衡", "卓越"].map(function(v) { return '<span class="tag-btn ' + (syn.values.indexOf(v) >= 0 ? 'picked' : '') + '" onclick="this.classList.toggle(\'picked\')">' + v + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我接下来的实验 / 行动</h3><textarea class="text-input" id="profile-actions" style="min-height:80px;" placeholder="接下来你打算做什么来验证或接近这个理想？">' + escapeHtml(syn.actions) + '</textarea></div><div style="display:flex;gap:10px;justify-content:center;margin-top:20px;"><button class="btn btn-outline" onclick="currentStep=0;renderExploreStep();">重新探索</button><button class="btn btn-primary" onclick="finalizeProfile()">保存我的理想档案</button></div></div>';
 }
 
 function synthesizeProfile() {
@@ -577,6 +610,20 @@ function allAnswersToAnswer() {
   var all = Object.values(answers).filter(Boolean);
   if (all.length === 0) return "";
   return "我想成为一个" + (all[all.length - 1] || "").slice(0, 20) + "……的人";
+}
+function generateAnswerPresets(syn) {
+  var presets = [];
+  var vals = (syn.values || []).slice(0, 3);
+  if (vals.length >= 2) presets.push("我想成为一个既" + vals[0] + "又" + vals[1] + "的人。");
+  if (vals.length >= 1) presets.push("我想用" + vals[0] + "的方式，让这个世界变得更好一点。");
+  var allAns = Object.values(answers).filter(Boolean);
+  if (allAns.length >= 2) {
+    var last = allAns[allAns.length - 1];
+    if (last.length > 30) last = last.slice(0, 30) + "……";
+    presets.push("我想成为一个" + last + "的人");
+  }
+  presets.push("我想成为那种多年以后回头看，不会后悔浪费了时间的人。");
+  return presets;
 }
 
 function finalizeProfile() {

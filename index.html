@@ -258,11 +258,11 @@ const FRAME_DIMENSIONS = [
 
 // ---- Reading Platforms ----
 const READING_PLATFORMS = {
-  weread: { name: "微信读书", icon: "📱", searchUrl: "https://weread.qq.com/web/search?key={}" },
+  douban: { name: "豆瓣读书", icon: "📝", searchUrl: "https://search.douban.com/book/subject_search?search_text={}" },
+  weread: { name: "微信读书", icon: "📱", searchUrl: "https://weread.qq.com/web/search/global?q={}" },
   jd: { name: "京东", icon: "📦", searchUrl: "https://search.jd.com/Search?keyword={}&enc=utf-8" },
-  dangdang: { name: "当当", icon: "📚", searchUrl: "http://search.dangdang.com/?key={}" },
-  douban: { name: "豆瓣读书", icon: "📝", searchUrl: "https://book.douban.com/subject_search?search_text={}" },
-  zlib: { name: "Z-Library", icon: "🌐", searchUrl: "https://zh.z-library.sk/s/{}" }
+  dangdang: { name: "当当", icon: "📚", searchUrl: "https://search.dangdang.com/?key={}" },
+  zlib: { name: "Z-Library", icon: "🌐", searchUrl: "https://z-lib.io/s/{}" }
 };
 
 // ---- Ideal Books ----
@@ -353,7 +353,7 @@ function loadActionPlan() { const raw = localStorage.getItem("ic_actionplan"); r
 function saveActionPlan(p) { localStorage.setItem("ic_actionplan", JSON.stringify(p)); }
 function loadNickname() { return localStorage.getItem("ic_nickname") || ""; }
 function saveNickname(n) { localStorage.setItem("ic_nickname", n); }
-function loadReadingPref() { return localStorage.getItem("ic_readingpref") || "weread"; }
+function loadReadingPref() { return localStorage.getItem("ic_readingpref") || "douban"; }
 function saveReadingPref(p) { localStorage.setItem("ic_readingpref", p); }
 
 // ============================================================
@@ -409,7 +409,7 @@ function renderPathsTab(container) {
 function renderBooksTab(container) {
   var pref = loadReadingPref();
   var platforms = Object.entries(READING_PLATFORMS);
-  container.innerHTML = '<h1>理想之书</h1><p class="sub">有些书不教你技能，而是帮你看到自己。以下是我们精选的八本与理想、意义和人生方向有关的书。</p><div class="reading-pref-bar"><span style="font-size:0.78rem;color:var(--muted);margin-right:4px;">你习惯在哪里看书？</span>' + platforms.map(function(p) { var key = p[0], pl = p[1]; return '<span class="reading-pref-btn ' + (pref === key ? 'active' : '') + '" onclick="setReadingPref(\'' + key + '\')">' + pl.icon + ' ' + pl.name + '</span>'; }).join("") + '</div>' + BOOKS.map(function(b) { var pl = READING_PLATFORMS[pref] || READING_PLATFORMS["weread"]; var url = pl.searchUrl.replace("{}", encodeURIComponent(b.query)); return '<div class="book-card"><div class="book-cover" style="background:' + b.color + ';">' + b.emoji + '</div><div class="book-info"><div class="book-title">' + escapeHtml(b.title) + '</div><div class="book-author">' + escapeHtml(b.author) + '</div><div class="book-why">「' + escapeHtml(b.why) + '」</div><div class="book-links"><a class="book-link" href="' + url + '" target="_blank" rel="noopener">' + pl.icon + ' ' + pl.name + '</a>' + platforms.filter(function(p) { return p[0] !== pref; }).slice(0, 2).map(function(p) { var pu = p[1].searchUrl.replace("{}", encodeURIComponent(b.query)); return '<a class="book-link" href="' + pu + '" target="_blank" rel="noopener">' + p[1].icon + '</a>'; }).join("") + '</div></div></div>'; }).join("") + '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">读完任何一本，回来用「静思」路径写下你的感受。</p><button class="btn btn-outline" onclick="switchHomeTab(\'paths\')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>';
+  container.innerHTML = '<h1>理想之书</h1><p class="sub">有些书不教你技能，而是帮你看到自己。以下是我们精选的八本与理想、意义和人生方向有关的书。</p><div class="reading-pref-bar"><span style="font-size:0.78rem;color:var(--muted);margin-right:4px;">你习惯在哪里看书？</span>' + platforms.map(function(p) { var key = p[0], pl = p[1]; return '<span class="reading-pref-btn ' + (pref === key ? 'active' : '') + '" onclick="setReadingPref(\'' + key + '\')">' + pl.icon + ' ' + pl.name + '</span>'; }).join("") + '</div>' + BOOKS.map(function(b) { var pl = READING_PLATFORMS[pref] || READING_PLATFORMS["douban"]; var url = pl.searchUrl.replace("{}", encodeURIComponent(b.query)); return '<div class="book-card"><div class="book-cover" style="background:' + b.color + ';">' + b.emoji + '</div><div class="book-info"><div class="book-title">' + escapeHtml(b.title) + '</div><div class="book-author">' + escapeHtml(b.author) + '</div><div class="book-why">「' + escapeHtml(b.why) + '」</div><div class="book-links"><a class="book-link" href="' + url + '" target="_blank" rel="noopener">' + pl.icon + ' ' + pl.name + '</a>' + platforms.filter(function(p) { return p[0] !== pref; }).slice(0, 2).map(function(p) { var pu = p[1].searchUrl.replace("{}", encodeURIComponent(b.query)); return '<a class="book-link" href="' + pu + '" target="_blank" rel="noopener">' + p[1].icon + '</a>'; }).join("") + '</div></div></div>'; }).join("") + '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">读完任何一本，回来用「静思」路径写下你的感受。</p><button class="btn btn-outline" onclick="switchHomeTab(\'paths\')" style="margin-top:8px;display:block;margin-left:auto;margin-right:auto;">回到寻路</button>';
 }
 
 function setReadingPref(key) { saveReadingPref(key); renderHomeTab(); }

@@ -71,12 +71,18 @@
 
   .path-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 500px) { .path-grid { grid-template-columns: 1fr; } }
-  .path-card { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 24px 20px; cursor: pointer; transition: all 0.25s; background: var(--card); text-align: left; position: relative; }
-  .path-card:hover { border-color: var(--accent-border); background: var(--accent-bg); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .path-card .emoji { font-size: 2rem; margin-bottom: 10px; display: block; transition: transform 0.25s; }
-  .path-card:hover .emoji { transform: scale(1.1); }
-  .path-card .title { font-weight: 650; font-size: 1.02rem; margin-bottom: 4px; }
-  .path-card .hint { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+  .path-card { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0; cursor: pointer; transition: all 0.25s; background: var(--card); text-align: left; overflow: hidden; display: flex; flex-direction: column; }
+  .path-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .path-card .emoji-wrap { font-size: 2.5rem; padding: 20px 20px 6px; display: block; transition: transform 0.25s; }
+  .path-card:hover .emoji-wrap { transform: scale(1.08); }
+  .path-card .path-body { padding: 0 20px 20px; flex: 1; display: flex; flex-direction: column; }
+  .path-card .title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; color: var(--fg); }
+  .path-card .hint { font-size: 0.78rem; color: var(--muted); line-height: 1.5; flex: 1; }
+  .path-card .path-accent { height: 3px; width: 32px; border-radius: 2px; margin-top: 10px; transition: width 0.25s; }
+  .path-card:hover .path-accent { width: 48px; }
+  .path-accent.a1 { background: #8b5cf6; } .path-accent.a2 { background: #ef4444; }
+  .path-accent.a3 { background: #10b981; } .path-accent.a4 { background: #3b82f6; }
+  .path-accent.a5 { background: var(--accent); } .path-accent.a6 { background: #ec4899; }
 
   .prompt-question { font-size: 1.15rem; font-weight: 650; margin-bottom: 14px; line-height: 1.5; }
   .text-input { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; font-family: inherit; line-height: 1.6; resize: vertical; min-height: 100px; background: #fafaf9; transition: border-color 0.15s; color: var(--fg); }
@@ -481,7 +487,8 @@ function getDailyCard() {
 function renderPathsTab(container) {
   var dc = getDailyCard();
   var dailyHtml = '<div class="daily-card"><div class="daily-label">' + (dc.type === 'quote' ? '今日一语' : dc.type === 'question' ? '今日一问' : '今日视野') + '</div><p class="daily-text">' + escapeHtml(dc.text) + '</p>' + (dc.source ? '<p class="daily-source">' + escapeHtml(dc.source) + '</p>' : '') + '</div>';
-  container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji">' + m.emoji + '</span><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span></div>'; }).join("") + '</div>';
+  var accentMap = { reflect: 'a1', act: 'a2', dialogue: 'a3', observe: 'a4', frame: 'a5', reverse: 'a6' };
+  container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji-wrap">' + m.emoji + '</span><div class="path-body"><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span><div class="path-accent ' + (accentMap[key] || 'a5') + '"></div></div></div>'; }).join("") + '</div>';
 }
 
 function renderBooksTab(container) {
@@ -885,64 +892,67 @@ function generateShareCard() {
   var p = loadProfile(); if (!p) { alert("请先创建理想档案。"); return; }
   var nick = loadNickname() || "一位探索者";
   var answer = p.answer || p.statement || "还在寻找中……";
-  var canvas = document.createElement("canvas"); canvas.width = 600; canvas.height = 800;
-  var ctx = canvas.getContext("2d");
-  // Background
-  var grad = ctx.createLinearGradient(0, 0, 0, 800); grad.addColorStop(0, "#fefce8"); grad.addColorStop(0.6, "#fdfaf5"); grad.addColorStop(1, "#fffbeb");
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, 600, 800);
-  // Top bar
-  ctx.fillStyle = "#d97706"; ctx.fillRect(0, 0, 600, 5);
-  // Compass logo
-  ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(300, 52, 20, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.moveTo(300, 34); ctx.lineTo(305, 49); ctx.lineTo(300, 46); ctx.lineTo(295, 49); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.arc(300, 52, 3.5, 0, Math.PI * 2); ctx.fill();
-  // Brand centered
-  ctx.fillStyle = "#d97706"; ctx.font = "bold 16px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.textAlign = "center"; ctx.fillText("理想罗盘", 300, 96);
-  ctx.textAlign = "start";
-  // Big question
-  ctx.fillStyle = "#292524"; ctx.font = "bold 22px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.textAlign = "center";
-  ctx.fillText("你想成为什么样的人？", 300, 150);
-  ctx.textAlign = "start";
-  // Who
-  ctx.fillStyle = "#a8a29e"; ctx.font = "14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.textAlign = "center"; ctx.fillText(nick + " 的回答", 300, 178);
-  ctx.textAlign = "start";
-  // Decorative line
-  ctx.fillStyle = "#fde68a"; ctx.fillRect(250, 196, 100, 2);
-  // The answer
-  var answerLines = wrapText(ctx, answer, 460);
-  var y = 245;
-  ctx.fillStyle = "#292524"; ctx.font = "bold 18px 'PingFang SC','Microsoft YaHei',sans-serif";
-  for (var i = 0; i < answerLines.length && i < 10; i++) {
-    ctx.textAlign = "center";
-    ctx.fillText(answerLines[i], 300, y); y += 36;
+  var c = document.createElement("canvas"); c.width = 600; c.height = 800;
+  var ctx = c.getContext("2d");
+  // Warm cream background
+  var bg = ctx.createLinearGradient(0, 0, 0, 800); bg.addColorStop(0, "#fffbeb"); bg.addColorStop(0.5, "#fdfaf5"); bg.addColorStop(1, "#fefce8");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, 600, 800);
+  // Subtle top decoration - thin gold line + thicker accent
+  ctx.fillStyle = "#fde68a"; ctx.fillRect(0, 0, 600, 2);
+  ctx.fillStyle = "#d97706"; ctx.fillRect(0, 2, 600, 4);
+  // Decorative circles (subtle background pattern)
+  for (var di = 0; di < 3; di++) {
+    ctx.beginPath(); ctx.arc(100 + di * 200, 120, 60 + di * 30, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(217,119,6,0.03)"; ctx.fill();
+  }
+  // Compass icon - larger, centered
+  ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(300, 60, 24, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.moveTo(300, 38); ctx.lineTo(307, 56); ctx.lineTo(300, 52); ctx.lineTo(293, 56); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(300, 60, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "rgba(217,119,6,0.3)"; ctx.beginPath(); ctx.moveTo(300, 82); ctx.lineTo(293, 64); ctx.lineTo(300, 68); ctx.lineTo(307, 64); ctx.closePath(); ctx.fill();
+  // Brand name
+  ctx.fillStyle = "#d97706"; ctx.font = "bold 18px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.textAlign = "center"; ctx.fillText("理想罗盘", 300, 112);
+  // Main question - larger and more prominent
+  ctx.fillStyle = "#292524"; ctx.font = "bold 22px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("你想成为什么样的人？", 300, 158);
+  // Divider with dot
+  ctx.fillStyle = "#fde68a"; ctx.fillRect(240, 172, 120, 2);
+  ctx.fillStyle = "#d97706"; ctx.beginPath(); ctx.arc(300, 173, 4, 0, Math.PI * 2); ctx.fill();
+  // "xxx 的回答"
+  ctx.fillStyle = "#a8a29e"; ctx.font = "14px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(nick + " 的回答", 300, 200);
+  // Answer text - card style
+  var answerLines = wrapText(ctx, answer, 420);
+  var y = 240;
+  ctx.fillStyle = "#292524"; ctx.font = "bold 17px 'PingFang SC','Microsoft YaHei',sans-serif";
+  for (var i = 0; i < answerLines.length && i < 8; i++) {
+    ctx.textAlign = "center"; ctx.fillText(answerLines[i], 300, y); y += 32;
   }
   ctx.textAlign = "start";
-  // Values as small tags
-  y += 20;
+  // Values
+  y += 30;
   if (p.values && p.values.length > 0) {
-    var vx = 80;
+    ctx.fillStyle = "#d97706"; ctx.font = "bold 13px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText("✦ 核心价值", 70, y); y += 28;
+    var vx = 70;
     for (var j = 0; j < p.values.length; j++) {
-      var vw = ctx.measureText(p.values[j]).width + 20;
-      if (vx + vw > 520) { vx = 80; y += 32; }
+      var tw = ctx.measureText(p.values[j]).width + 24;
+      if (vx + tw > 530) { vx = 70; y += 32; }
       ctx.fillStyle = "#fef3c7"; ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1;
-      roundRect(ctx, vx, y - 15, vw, 25, 12); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#92400e"; ctx.font = "12px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(p.values[j], vx + 10, y);
-      vx += vw + 8;
+      roundRect(ctx, vx, y - 16, tw, 26, 13); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#92400e"; ctx.font = "12px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.fillText(p.values[j], vx + 12, y);
+      vx += tw + 10;
     }
   }
   // Footer
-  y = 710;
-  ctx.fillStyle = "#e7e5e4"; ctx.fillRect(50, y, 500, 1);
+  y = 700;
+  ctx.fillStyle = "#e7e5e4"; ctx.fillRect(60, y, 480, 1.5);
   y += 30;
   ctx.fillStyle = "#a8a29e"; ctx.font = "12px 'PingFang SC','Microsoft YaHei',sans-serif"; ctx.textAlign = "center";
   ctx.fillText("不是「你能做什么工作」，而是「你想成为谁」", 300, y);
   y += 20;
-  ctx.fillText("来理想罗盘，写下你自己的答案", 300, y);
-  y += 20;
-  ctx.fillText("qingming-123.github.io/ideal-compass", 300, y);
+  ctx.fillText("来理想罗盘，写下你自己的答案  ·  qingming-123.github.io/ideal-compass", 300, y);
   ctx.textAlign = "start";
   // Download
-  canvas.toBlob(function(blob) { var url = URL.createObjectURL(blob); var a = document.createElement("a"); a.href = url; a.download = "我的理想_" + nick + ".png"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); });
+  c.toBlob(function(blob) { var url = URL.createObjectURL(blob); var a = document.createElement("a"); a.href = url; a.download = "我的理想_" + nick + ".png"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); });
   var toast = document.createElement("div"); toast.className = "copied-toast"; toast.textContent = "分享卡片已下载！可以发朋友圈啦";
   document.body.appendChild(toast); setTimeout(function() { toast.remove(); }, 2500);
 }

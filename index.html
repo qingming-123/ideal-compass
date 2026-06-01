@@ -250,6 +250,187 @@
 // DATA
 // ============================================================
 
+// ============================================================
+// IDEAL TYPE PATHWAYS & CULTIVATION SYSTEM
+// ============================================================
+const IDEAL_PATHWAYS = {
+  moon: { name: "月亮途径", icon: "🌙", tagline: "向内求 · 修炼自我", desc: "你的理想指向内心深处——你想成为一个更清醒、更完整、更不被外界左右的人。你的力量来自觉察、内省和精神的深度。", stages: [
+    { name: "觉察者", desc: "开始观察自己的情绪、欲望和惯性反应。能从「我为什么这样想」追溯到「我真的要什么」。标志：可以独立分辨自己的真实需求和外部期待。", milestone: "连续7天每天写15分钟反思日记", icon: "👁️" },
+    { name: "守心者", desc: "建立稳定的内在秩序。外界的评价、诱惑和压力不再轻易晃动你的方向。标志：被质疑时能心平气和地表达立场而不自我怀疑。", milestone: "在3次令你焦虑的外界压力中保持自己的判断", icon: "🛡️" },
+    { name: "觉者", desc: "你不仅能觉察自己，还能帮助他人看清他们的方向。你的存在本身就是一种安静的力量。标志：有人因为你的一句话或一个行为而改变了人生的选择。", milestone: "写出你的个人哲学并分享给至少10个人", icon: "💡" }
+  ]},
+  star: { name: "星火途径", icon: "🔥", tagline: "向外行 · 改变世界", desc: "你的理想指向外部——你想做事、创造价值、留下痕迹。你的动力来自行动、影响和可见的成果。", stages: [
+    { name: "播火者", desc: "找到一个具体的问题或目标，点燃第一簇火焰。不再只是想，而是开始做。标志：完成一项你筹划已久的行动——哪怕很小。", milestone: "启动一个具体的项目或行动，做出第一个可见成果", icon: "🌱" },
+    { name: "燎原者", desc: "你的行动产生了涟漪效应——有人被带动、被影响。你开始从个人行动走向协作和放大。标志：你的行动直接影响了至少5个人。", milestone: "带领至少3个人参与你的项目，产生集体成果", icon: "🔥" },
+    { name: "铸光者", desc: "你在某个领域建立了系统性的改变——不是一时的热度，而是可持续的结构、方法或作品。标志：你的成果可以脱离你本人继续运作。", milestone: "建立一个可以自行运转的机制或产出持久作品", icon: "✨" }
+  ]},
+  bridge: { name: "桥梁途径", icon: "🌉", tagline: "连接人 · 搭建关系", desc: "你的理想指向人与人之间——你想连接、沟通、赋能他人。你的力量来自理解、倾听和编织关系网络。", stages: [
+    { name: "倾听者", desc: "学会真正听见别人——不只是语言，还有言外之意。标志：有人对你说「你是第一个真正理解我的人」。", milestone: "和3个不同的人深度交谈，只问问题不给建议", icon: "👂" },
+    { name: "织网者", desc: "主动连接不同的人，创造原本不会发生的协作和友谊。标志：你促成了至少一次有价值的「人脉连接」。", milestone: "组织一次小型聚会或协作，连接不同圈子的人", icon: "🕸️" },
+    { name: "架桥者", desc: "你搭建的桥梁可以承载很多人——一个社区、一个平台、一个长久的连接机制。标志：你创造的连接在你离开后依然活跃。", milestone: "建立一个持续运营的社群或协作网络", icon: "🌉" }
+  ]},
+  root: { name: "根源途径", icon: "🧿", tagline: "守护 · 传承", desc: "你的理想指向守护——你想保护和传承那些有价值但正在消逝的东西。你的力量来自坚定、耐心和对历史的尊重。", stages: [
+    { name: "守护者", desc: "识别并开始保护一样你珍视的事物——可能是一段记忆、一种手艺、一个地方或一种传统。标志：你为守护对象做了第一件具体的事。", milestone: "记录或学习一项你珍视但正在消失的技能/知识", icon: "🏛️" },
+    { name: "修复者", desc: "从守护走向修复——不只是保存，而是让它重新鲜活。标志：你修复的对象开始被更多人看到或使用。", milestone: "将你守护的东西以新形式呈现给至少20个人", icon: "🔧" },
+    { name: "传灯者", desc: "培养下一代守护者。知识和热情开始跨越代际传递。标志：有人因为你而主动接过了守护的责任。", milestone: "找到或培养至少1个愿意接下你守护使命的人", icon: "🕯️" }
+  ]},
+  edge: { name: "破界途径", icon: "🌪️", tagline: "探索 · 突破边界", desc: "你的理想指向未知——你想突破现有的边界，探索新的可能。你的力量来自好奇心、勇气和对舒适的永不满足。", stages: [
+    { name: "远行者", desc: "走出熟悉的领域，走进陌生的方向。标志：你主动接触了一个完全不熟悉的领域并开始学习。", milestone: "掌握一项与你现有能力完全无关的新技能", icon: "🧭" },
+    { name: "破界者", desc: "在已知与未知之间建立联系——发现原本不相关的两个领域之间的隐秘桥梁。标志：你创造了一种「跨界」的成果。", milestone: "将两个不同领域的知识结合，做出一个创新成果", icon: "⚡" },
+    { name: "开荒者", desc: "开创全新的领域——不只是跨界，而是发现或定义了一个全新的方向。标志：你的探索为后来者打开了大门。", milestone: "公开发布你的独特方法论或开辟一个新方向", icon: "🗺️" }
+  ]}
+};
+
+// Map question path answers to ideal type
+function classifyIdealType(answers) {
+  var scores = { moon: 0, star: 0, bridge: 0, root: 0, edge: 0 };
+  var vals = Object.values(answers);
+  vals.forEach(function(a) {
+    if (typeof a !== 'string') return;
+    if (/内|独|思考|觉察|精神|平静|阅读|写|观/i.test(a)) scores.moon++;
+    if (/行动|创造|改|做|影响|项目|启|带领/i.test(a)) scores.star++;
+    if (/人|连接|沟通|倾听|帮|关系|陪伴|社区/i.test(a)) scores.bridge++;
+    if (/守护|保护|传承|修复|历史|保存|传统|手艺/i.test(a)) scores.root++;
+    if (/探|冒|突破|边界|未知|新|冒险|陌生|跨界/i.test(a)) scores.edge++;
+  });
+  var best = "moon"; var bestScore = 0;
+  Object.keys(scores).forEach(function(k) { if (scores[k] > bestScore) { bestScore = scores[k]; best = k; } });
+  return best;
+}
+
+// ============================================================
+// DEEP QUESTION TREE (branching, multi-round)
+// ============================================================
+const DEEP_TREE = {
+  start: { id: "start", q: "什么样的时刻让你觉得「时间消失了」——完全沉浸，忘了周围一切？", presets: [
+    { text: "一个人安静地阅读、写作或思考，周围越安静越好。", next: "inward" },
+    { text: "在做一个具体的项目或任务——做手工、写代码、搭东西。", next: "outward" },
+    { text: "和一个或几个人深度聊天，互相倾诉、倾听、分享。", next: "connect" },
+    { text: "整理旧物、修复破损的东西、把混乱变得井井有条。", next: "guard" },
+    { text: "尝试完全陌生的东西——旅行、学新技能、闯进未知。", next: "explore" }
+  ]},
+  inward: { id: "inward", q: "当你独处时，什么样的内心活动让你觉得'这样活着很值得'？", presets: [
+    { text: "突然理解了一件困惑很久的事——那种'原来如此'的瞬间。", next: "inward_insight" },
+    { text: "感受到一种平静的满足——不是狂喜，而是一种深层的'对了'。", next: "inward_peace" },
+    { text: "在创作中表达了自己——写了一段文字、画了一幅画、想通了一个道理。", next: "outward" },
+    { text: "回顾自己的成长，看到自己比以前更成熟、更清醒了。", next: "inward_growth" }
+  ]},
+  inward_insight: { id: "inward_insight", q: "那种'原来如此'的瞬间，通常是在思考什么类型的问题？", presets: [
+    { text: "关于自己——我为什么会有这种情绪？我真正想要的是什么？", next: "values_self" },
+    { text: "关于世界——事物运行的规律、人性的本质、历史的逻辑。", next: "values_knowledge" },
+    { text: "关于关系——人与人之间为什么会这样？怎样才能更好地理解别人？", next: "connect" }
+  ]},
+  inward_peace: { id: "inward_peace", q: "那种'对了'的感觉，最常出现在什么之后？", presets: [
+    { text: "冥想、散步或者什么都不做——在安静中和自己相处。", next: "values_self" },
+    { text: "完成了一件需要耐心的事——读完一本难书、整理完房间、按计划完成目标。", next: "guard" },
+    { text: "帮助了别人——给朋友建议、倾听倾诉、让一个人感觉好一点。", next: "connect" }
+  ]},
+  inward_growth: { id: "inward_growth", q: "你想要的成长，更接近哪一种？", presets: [
+    { text: "成为一个情绪稳定、内心强大、不被外界动摇的人。", next: "values_self" },
+    { text: "成为一个能洞察事物本质、有智慧的人。", next: "values_knowledge" },
+    { text: "成为一个能帮助他人成长的人——你的经历能给别人力量。", next: "bridge" }
+  ]},
+  outward: { id: "outward", q: "当你动手做事的时候，什么让你最有成就感？", presets: [
+    { text: "看到自己完成的东西——一件作品、一个项目、一个可见的结果。", next: "outward_create" },
+    { text: "知道自己的行动帮助了别人——解决了某个人的实际问题。", next: "bridge" },
+    { text: "做了以前不敢做的事——克服恐惧、突破自己的极限。", next: "explore" },
+    { text: "影响了别人——有人因为我做的事也开始行动了。", next: "outward_lead" }
+  ]},
+  outward_create: { id: "outward_create", q: "你更享受创造的哪个环节？", presets: [
+    { text: "从零到一——把一个想法变成现实的兴奋感。", next: "star" },
+    { text: "打磨和优化——把一个粗糙的东西做到精致、做到完美。", next: "guard" },
+    { text: "分享和传播——让更多人看到、用到、被影响到。", next: "outward_lead" }
+  ]},
+  outward_lead: { id: "outward_lead", q: "影响别人的时候，你更希望达到什么效果？", presets: [
+    { text: "让别人也相信自己可以——给他们信心和勇气。", next: "star" },
+    { text: "改变某个规则或系统——让环境变得更好，而不仅仅是个人。", next: "star" },
+    { text: "建立一种模式或方法——让后来的人可以参考和复制。", next: "root" }
+  ]},
+  connect: { id: "connect", q: "在人与人之间，你最看重什么？", presets: [
+    { text: "深度的理解——有人真正知道你是谁，不需要解释太多。", next: "connect_deep" },
+    { text: "温暖和归属感——知道自己属于一个群体，被接纳被需要。", next: "bridge" },
+    { text: "赋能——帮助别人变得更好，看到他们因为你而成长。", next: "bridge" },
+    { text: "和解——化解冲突、修复破裂的关系、让双方重新对话。", next: "connect_peace" }
+  ]},
+  connect_deep: { id: "connect_deep", q: "什么样的关系让你觉得最满足？", presets: [
+    { text: "一对一的深度友谊——有一个完全信任的知己。", next: "moon" },
+    { text: "一个紧密的小圈子——几个人一起成长、互相扶持。", next: "bridge" },
+    { text: "能帮到陌生人——你的存在让素不相识的人生活变好了。", next: "star" }
+  ]},
+  connect_peace: { id: "connect_peace", q: "你想化解的冲突，更多是在哪个层面？", presets: [
+    { text: "人与人之间——家人、朋友、同事之间的误解和伤害。", next: "bridge" },
+    { text: "群体之间——不同背景、不同立场的人之间的隔阂。", next: "star" },
+    { text: "人与自己之间——帮助人们和自己的过去和解。", next: "moon" }
+  ]},
+  guard: { id: "guard", q: "你想守护或修复的东西，对你来说最重要的价值是什么？", presets: [
+    { text: "它承载了记忆和历史——没有它，一部分过去就永远消失了。", next: "root" },
+    { text: "它本身就很美——一件艺术品、一种工艺、一个地方的自然之美。", next: "root" },
+    { text: "它能让未来的人受益——传承下去，让后代也能拥有。", next: "root" },
+    { text: "修复它能让我平静——手工艺、整理、还原，本身就是一种治愈。", next: "moon" }
+  ]},
+  explore: { id: "explore", q: "你探索的动力来自哪里？", presets: [
+    { text: "好奇心——'我不知道这个，我想搞清楚'。", next: "explore_curious" },
+    { text: "对现状的不满足——'这样还不够，一定还有更好的方式'。", next: "star" },
+    { text: "对自由的渴望——'我不想被任何边界定义'。", next: "edge" },
+    { text: "想找到真正的自己——'也许在不同的环境和文化里，我能看到不同的我'。", next: "moon" }
+  ]},
+  explore_curious: { id: "explore_curious", q: "你的好奇心更偏向哪种？", presets: [
+    { text: "理解事物的本质——想知道世界是怎么运作的。", next: "values_knowledge" },
+    { text: "体验不同的生活——每种生活方式都是一种可能性。", next: "edge" },
+    { text: "创造新的东西——把不相干的点连成线，发明新东西。", next: "edge" }
+  ]},
+  star: { id: "star", q: "如果一个想法或项目只能产生很小的影响，你还愿意做吗？", presets: [
+    { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
+    { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
+    { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
+  ]},
+  values_self: { id: "values_self", q: "如果必须在以下选项中选一个，你更害怕哪种'失败'？", presets: [
+    { text: "一生都没有真正了解自己。", next: "end_moon" },
+    { text: "一生都没有为别人做过什么有意义的事。", next: "end_bridge" },
+    { text: "一生都在做别人想让我做的事，没有为自己活过。", next: "end_moon" }
+  ]},
+  values_knowledge: { id: "values_knowledge", q: "你觉得一个人最重要的品质是什么？", presets: [
+    { text: "清醒——不被表象迷惑，能看到事物的本质。", next: "end_moon" },
+    { text: "勇敢——敢于质疑、敢于探索、敢于承认自己错了。", next: "end_edge" },
+    { text: "善良——在追求真理的同时不忘记人的温度。", next: "end_bridge" }
+  ]},
+  values_action: { id: "values_action", q: "你更倾向于哪种行动方式？", presets: [
+    { text: "独自完成——效率高、控制感强，能完全按照自己的标准。", next: "end_star" },
+    { text: "带领团队——一起做更大事，虽然复杂但更有意义。", next: "end_star" },
+    { text: "启发别人——我不一定要做最大，但我希望成为火花。", next: "end_star" }
+  ]},
+  values_scale: { id: "values_scale", q: "如果资源有限，你更倾向于把资源投在哪里？", presets: [
+    { text: "培养人——投资个人成长，好的种子会长成大树。", next: "end_bridge" },
+    { text: "搭建系统——建好管道，水自然会流。", next: "end_root" },
+    { text: "探索新模式——先实验，找到真正有效的路径再放大。", next: "end_edge" }
+  ]},
+  values_impact: { id: "values_impact", q: "你更希望在自己的人生中留下什么？", presets: [
+    { text: "一个能持续运行的组织或系统。", next: "end_root" },
+    { text: "一个改变了某个行业或领域的发明或方法。", next: "end_edge" },
+    { text: "一群因为我而改变了人生轨迹的人。", next: "end_bridge" }
+  ]},
+  end_moon: { id: "end_moon", end: true, type: "moon" },
+  end_star: { id: "end_star", end: true, type: "star" },
+  end_bridge: { id: "end_bridge", end: true, type: "bridge" },
+  end_root: { id: "end_root", end: true, type: "root" },
+  end_edge: { id: "end_edge", end: true, type: "edge" },
+  star: { id: "star", q: "如果一个想法或项目只能产生很小的影响，你还愿意做吗？", presets: [
+    { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
+    { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
+    { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
+  ]}
+};
+// Note: 'star' node defined above near outward_create/lines, redefined here with proper presets
+// Fix duplicate: replace the earlier 'star' node
+DEEP_TREE.star = { id: "star", q: "你的行动产生了影响。现在问问自己：如果这个影响只能很小，你还愿意持续做下去吗？", presets: [
+  { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
+  { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
+  { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
+]};
+
+// Deep exploration state
+let deepNode = null, deepAnswers = [], deepIdealType = null;
+
 const PATH_META = {
   reflect: { name: "静思 · 与自己对话", emoji: "🌙", desc: "准备好纸笔（或就在这里写），给自己一段不被打扰的时间。下面几个问题没有标准答案，只有真实的你。" },
   act: { name: "行动 · 在尝试中感受", emoji: "🔥", desc: "有些答案只在行动中浮现。我们为你设计几个微型实验，做完了再回来写感受。" },
@@ -488,7 +669,7 @@ function renderPathsTab(container) {
   var dc = getDailyCard();
   var dailyHtml = '<div class="daily-card"><div class="daily-label">' + (dc.type === 'quote' ? '今日一语' : dc.type === 'question' ? '今日一问' : '今日视野') + '</div><p class="daily-text">' + escapeHtml(dc.text) + '</p>' + (dc.source ? '<p class="daily-source">' + escapeHtml(dc.source) + '</p>' : '') + '</div>';
   var accentMap = { reflect: 'a1', act: 'a2', dialogue: 'a3', observe: 'a4', frame: 'a5', reverse: 'a6' };
-  container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">选择你的探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji-wrap">' + m.emoji + '</span><div class="path-body"><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span><div class="path-accent ' + (accentMap[key] || 'a5') + '"></div></div></div>'; }).join("") + '</div>';
+  container.innerHTML = '<h1>你想成为<br>什么样的人？</h1><p class="sub">不是「你能做什么工作」，而是「你想成为谁」。<br>每个人寻找理想的方式都不一样——选择一条适合你的路径，开始探索。</p>' + dailyHtml + '<div style="background:linear-gradient(135deg,var(--accent-bg),#fff);border:2px solid var(--accent-border);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;cursor:pointer;transition:all 0.25s;" onclick="startDeepExplore()"><div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;"><span style="font-size:1.6rem;">🧬</span><div><span style="font-weight:700;font-size:1rem;color:var(--fg);">深度探索 · 层层递进找到你的理想类型</span><span style="display:inline-block;background:var(--accent);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:650;">推荐</span></div></div><p style="font-size:0.8rem;color:var(--muted);">通过分支式追问，深度探析你的理想。完成后会为你匹配专属的「理想途径」和修炼路线。</p></div><p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;font-weight:600;letter-spacing:0.03em;">或选择快速探索方式</p><div class="path-grid">' + Object.entries(PATH_META).map(function(entry) { var key = entry[0], m = entry[1]; return '<div class="path-card" onclick="startPath(\'' + key + '\')"><span class="emoji-wrap">' + m.emoji + '</span><div class="path-body"><span class="title">' + m.name + '</span><span class="hint">' + m.desc.slice(0, 50) + '……</span><div class="path-accent ' + (accentMap[key] || 'a5') + '"></div></div></div>'; }).join("") + '</div>';
 }
 
 function renderBooksTab(container) {
@@ -506,6 +687,66 @@ function renderNarrativesTab(container) {
 // ============================================================
 // EXPLORATION PATHS (existing, ported)
 // ============================================================
+
+// ============================================================
+// DEEP EXPLORATION (branching question tree)
+// ============================================================
+function startDeepExplore() {
+  deepNode = "start"; deepAnswers = []; deepIdealType = null;
+  answers = {}; dialogueHistory = [];
+  navigate("explore");
+  renderDeepStep();
+}
+function renderDeepStep() {
+  var card = document.getElementById("explore-card");
+  var node = DEEP_TREE[deepNode];
+  if (!node || node.end) { finishDeepExplore(); return; }
+  var prev = answers["deep_" + deepNode] || "";
+  var presetHtml = '<div class="tag-group" style="margin-top:6px;">' + node.presets.map(function(pre) { return '<span class="tag-btn" style="font-size:0.8rem;padding:6px 12px;cursor:pointer;" onclick="fillTextarea(\'deep-answer\',\'' + escapeHtml(pre.text).replace(/'/g, "\\'") + '\')">' + escapeHtml(pre.text.slice(0, 35)) + (pre.text.length > 35 ? '…' : '') + '</span>'; }).join("") + '<span style="font-size:0.73rem;color:var(--muted);">（点击填入，可修改）</span></div>';
+  var progress = deepAnswers.length + 1;
+  card.innerHTML = '<div class="fade-in"><div class="step-indicator"><span>深度探索 · 第 ' + progress + ' 轮</span><div class="step-dot-row">' + Array.from({length: 5}, function(_, i) { return '<div class="step-dot ' + (i < Math.min(progress, 5) ? 'done' : '') + '"></div>'; }).join("") + '</div></div><p class="prompt-question">' + escapeHtml(node.q) + '</p><textarea class="text-input" id="deep-answer" placeholder="写下你的真实想法……" style="min-height:80px;">' + escapeHtml(prev) + '</textarea>' + presetHtml + '<div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between;"><button class="btn btn-ghost" onclick="deepBack()" ' + (deepAnswers.length === 0 ? 'disabled' : '') + '>返回上题</button><button class="btn btn-primary" onclick="advanceDeepExplore()">' + (progress >= 4 ? '查看我的理想类型' : '继续') + '</button></div></div>';
+  setTimeout(function() { var ta = document.getElementById("deep-answer"); if (ta) ta.focus(); }, 100);
+}
+function advanceDeepExplore() {
+  var val = document.getElementById("deep-answer").value.trim();
+  if (!val) return;
+  answers["deep_" + deepNode] = val;
+  deepAnswers.push({ node: deepNode, answer: val });
+  var node = DEEP_TREE[deepNode];
+  if (!node || node.end) { finishDeepExplore(); return; }
+  var nextNode = null;
+  if (node.presets) {
+    for (var i = 0; i < node.presets.length; i++) {
+      if (val.indexOf(node.presets[i].text) === 0) { nextNode = node.presets[i].next; break; }
+    }
+  }
+  deepNode = nextNode || "values_self";
+  if (deepAnswers.length >= 5 || (DEEP_TREE[deepNode] && DEEP_TREE[deepNode].end)) { finishDeepExplore(); return; }
+  renderDeepStep();
+}
+function deepBack() {
+  if (deepAnswers.length === 0) return;
+  var prev = deepAnswers.pop();
+  deepNode = prev.node;
+  answers["deep_" + deepNode] = prev.answer;
+  renderDeepStep();
+}
+function finishDeepExplore() {
+  deepIdealType = classifyIdealType(answers);
+  var pw = IDEAL_PATHWAYS[deepIdealType];
+  var stage1 = pw.stages[0];
+  var card = document.getElementById("explore-card");
+  card.innerHTML = '<div class="fade-in"><div style="text-align:center;margin-bottom:20px;"><span style="font-size:3rem;display:block;margin-bottom:6px;">' + pw.icon + '</span><h2>你的理想类型</h2><span style="display:inline-block;background:var(--accent-bg);color:var(--accent);font-weight:700;padding:6px 18px;border-radius:20px;font-size:1rem;margin-bottom:10px;">' + pw.name + '</span><p style="color:var(--fg2);font-size:0.9rem;margin-top:4px;">' + pw.tagline + '</p></div><p style="color:var(--fg);font-size:0.95rem;line-height:1.7;margin-bottom:16px;">' + pw.desc + '</p><div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);padding:16px;margin-bottom:16px;"><span style="font-weight:700;color:var(--green);">⚡ 当前阶段：' + stage1.name + '（' + stage1.icon + '）</span><p style="font-size:0.85rem;color:var(--fg2);margin-top:4px;">' + stage1.desc + '</p><p style="font-size:0.8rem;color:var(--accent);margin-top:6px;">入门里程碑：' + stage1.milestone + '</p></div><div style="margin-bottom:16px;"><p style="font-size:0.8rem;color:var(--muted);margin-bottom:6px;">修炼路径预览：</p>' + pw.stages.map(function(s, i) { return '<div style="padding:6px 0;font-size:0.85rem;"><span style="color:var(--accent);">' + s.icon + ' ' + s.name + '</span> <span style="color:var(--muted);">→ ' + s.milestone.slice(0, 30) + '……</span></div>'; }).join("") + '</div><div class="profile-section"><h3>你的核心回答（将作为档案基础）</h3><textarea class="text-input" id="deep-summary" style="min-height:80px;">' + escapeHtml(deepAnswers.map(function(a) { return a.answer; }).join("；")) + '</textarea></div><p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">上面的摘要会作为你的理想档案基础。你可以修改、精简或重写。</p><button class="btn btn-primary" onclick="saveDeepProfile()">保存并生成我的理想档案 →</button><button class="btn btn-ghost" onclick="startDeepExplore()" style="margin-left:8px;">重新探索</button></div>';
+}
+function saveDeepProfile() {
+  var summary = document.getElementById("deep-summary").value.trim();
+  var pw = IDEAL_PATHWAYS[deepIdealType];
+  var stage1 = pw.stages[0];
+  var answer = "我的理想途径是「" + pw.name + "」——" + pw.tagline + "。当前阶段：" + stage1.name + "。\n" + summary;
+  saveProfile({ answer: answer, statement: summary, values: [pw.name, stage1.name], actions: stage1.milestone, path: "deep", idealType: deepIdealType, stage: 0, createdAt: new Date().toISOString() });
+  saveCommunityEntry({ id: "user_" + Date.now(), name: loadNickname() || "我的档案", date: new Date().toISOString().slice(0, 10), statement: summary, values: [pw.name, stage1.name], progress: stage1.milestone });
+  navigate("profile");
+}
 
 function startPath(path) { currentPath = path; currentStep = 0; answers = {}; dialogueHistory = []; navigate("explore"); renderExploreStep(); }
 
@@ -682,7 +923,12 @@ function renderProfile() {
   }
   var hist = loadProfileHistory(); var timeHtml = '';
   if (hist.length > 1) { timeHtml = '<div class="profile-section"><h3>理想时间线</h3><div style="font-size:0.85rem;color:var(--muted);">' + hist.slice(-5).reverse().map(function(h) { return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + new Date(h.date).toLocaleDateString("zh-CN") + ' — ' + escapeHtml((h.statement || "").slice(0, 60)) + (h.statement && h.statement.length > 60 ? '……' : '') + '</div>'; }).join("") + '</div></div>'; }
-  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (PATH_META[p.path]?.name || "未知") + '」探索</p>' + (p.answer ? '<div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><h3 style="color:var(--accent);">🎯 你想成为什么样的人？</h3><p style="font-size:1.15rem;font-weight:650;line-height:1.6;color:var(--fg);">' + escapeHtml(p.answer) + '</p></div>' : '') + '<div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + timeHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出档案</button><button class="btn btn-primary btn-sm" onclick="generateShareCard()">🖼️ 生成分享卡片</button></div></div>';
+  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (p.path === "deep" ? "深度探索" : PATH_META[p.path]?.name || "未知") + '」探索</p>' + (p.answer ? '<div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><h3 style="color:var(--accent);">🎯 你想成为什么样的人？</h3><p style="font-size:1.15rem;font-weight:650;line-height:1.6;color:var(--fg);">' + escapeHtml(p.answer) + '</p></div>' : '') + (p.idealType ? renderIdealTypeBox(p) : '') + '<div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + timeHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出档案</button><button class="btn btn-primary btn-sm" onclick="generateShareCard()">🖼️ 生成分享卡片</button></div></div>';
+}
+function renderIdealTypeBox(p) {
+  var pw = IDEAL_PATHWAYS[p.idealType]; if (!pw) return '';
+  var stage = pw.stages[p.stage || 0];
+  return '<div style="background:linear-gradient(135deg,#fdf4ff,#fffbeb);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-size:1.8rem;">' + pw.icon + '</span><div><span style="font-weight:700;font-size:1rem;color:var(--fg);">' + pw.name + '</span><span style="font-size:0.78rem;color:var(--muted);display:block;">' + pw.tagline + '</span></div></div><p style="font-size:0.82rem;color:var(--fg2);margin-bottom:12px;">' + pw.desc + '</p><div style="background:#fff;border:1px solid var(--green-border);border-radius:8px;padding:12px;margin-bottom:10px;"><span style="font-size:0.75rem;color:var(--green);font-weight:650;">⚡ 当前境界：' + stage.name + '（' + stage.icon + '）</span><p style="font-size:0.78rem;color:var(--fg2);margin-top:2px;">' + stage.desc + '</p></div><div style="font-size:0.73rem;color:var(--muted);">修炼路径：' + pw.stages.map(function(s,i) { return '<span style="color:' + (i <= (p.stage||0) ? 'var(--green)' : 'var(--muted)') + ';">' + s.icon + s.name + '</span>'; }).join(" → ") + '</div></div>';
 }
 function editProfile() { var p = loadProfile(); if (!p) return; answers = {}; currentPath = p.path; dialogueHistory = []; navigate("explore"); currentStep = getPathLength() + 1; renderBuildProfile(document.getElementById("explore-card")); }
 

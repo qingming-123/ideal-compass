@@ -145,6 +145,7 @@
   [data-theme="dark"] .persona-card:hover { background: #2d2418; }
   [data-theme="dark"] .resource-card.selected { background: #2d2a28; }
   [data-theme="dark"] .book-link { background: #2d2a28; }
+  [data-theme="dark"] .deep-card { background: linear-gradient(135deg, #2d2418, #1c1917); border-color: #44403c; }
 
   /* Book cards */
   .book-card { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: all 0.25s; }
@@ -298,135 +299,248 @@ function classifyIdealType(answers) {
   return best;
 }
 
+// Stage-specific resources for each pathway
+const STAGE_RESOURCES = {
+  moon: [
+    { stage: 0, icon: "👁️", name: "觉察者资源", books: ["被讨厌的勇气", "当下的力量", "也许你该找个人聊聊"], vids: [{ title: "正念冥想入门", type: "Headspace" }, { title: "什么是真正的自我觉察？", type: "The School of Life" }], actions: ["连续7天每天写15分钟情绪日记", "花一周观察自己的三个惯性反应并记录下来"] },
+    { stage: 1, icon: "🛡️", name: "守心者资源", books: ["沉思录", "道德经", "活出生命的意义"], vids: [{ title: "斯多葛主义的生活艺术", type: "YouTube" }, { title: "如何在混乱中保持内心秩序？", type: "TED" }], actions: ["在3次令你焦虑的压力中保持自己的判断并记录", "进行一次24小时独处挑战——关掉手机，和自己相处"] },
+    { stage: 2, icon: "💡", name: "觉者资源", books: ["思想的力量", "禅与摩托车维修艺术", "有限与无限的游戏"], vids: [{ title: "如何帮助他人找到方向？", type: "TED" }, { title: "哲学如何拯救你的生活？", type: "The School of Life 系列" }], actions: ["写出你的个人哲学并分享给至少10个人", "为一个人做一次深度的'方向教练'——只问问题不給建议"] }
+  ],
+  star: [
+    { stage: 0, icon: "🌱", name: "播火者资源", books: ["从零到一", "原子习惯", "搞定"], vids: [{ title: "如何开始一个项目？", type: "TED" }, { title: "从想法到行动", type: "YouTube" }], actions: ["启动一个小项目并在两周内完成第一个版本", "把你一直想做的项目写成200字描述，发给3个朋友"] },
+    { stage: 1, icon: "🔥", name: "燎原者资源", books: ["影响力", "引爆点", "疯传"], vids: [{ title: "如何发起一场运动？", type: "TED (Derek Sivers)" }, { title: "伟大的领导者做什么？", type: "TED (Simon Sinek)" }], actions: ["带领至少3个人一起推进你的项目", "把你的成果写成文章或做成视频，让更多人看到"] },
+    { stage: 2, icon: "✨", name: "铸光者资源", books: ["基业长青", "创新者的窘境", "系统之美"], vids: [{ title: "如何建立可持续的系统？", type: "TED" }, { title: "从创业者到建造者", type: "YouTube" }], actions: ["设计一个可以在没有你的情况下自动运行的流程", "把你的方法论写下来，让后来的人可以参考复制"] }
+  ],
+  bridge: [
+    { stage: 0, icon: "👂", name: "倾听者资源", books: ["非暴力沟通", "共情的力量", "社交天性"], vids: [{ title: "脆弱的力量", type: "TED (Brené Brown)" }, { title: "如何成为一个更好的倾听者？", type: "The School of Life" }], actions: ["和3个不同的人深度倾听——只问问题、不给建议", "每天记录一个你从别人那里听到的、让你触动的故事"] },
+    { stage: 1, icon: "🕸️", name: "织网者资源", books: ["群体的智慧", "连接", "部落"], vids: [{ title: "如何建立深度连接？", type: "TED" }, { title: "社群的力量", type: "YouTube" }], actions: ["组织一次小型聚会，把两个不同圈子的人连在一起", "主动为三个人牵线——介绍可以互相帮助的人认识"] },
+    { stage: 2, icon: "🌉", name: "架桥者资源", books: ["平台革命", "社群的逻辑", "赋能"], vids: [{ title: "如何建立一个持久社群？", type: "TED" }, { title: "从连接到生态", type: "YouTube" }], actions: ["建立或加入一个社群的核心运营团队", "设计一个机制让社群在没有引领者时也能自运转"] }
+  ],
+  root: [
+    { stage: 0, icon: "🏛️", name: "守护者资源", books: ["瓦尔登湖", "留住手艺", "匠人精神"], vids: [{ title: "为什么传统值得守护？", type: "TED" }, { title: "手工艺的复兴", type: "纪录片" }], actions: ["学习一项正在消失的技能——向一位长辈或老师傅请教", "用照片或文字记录一件你所珍视的事物——做一份档案"] },
+    { stage: 1, icon: "🔧", name: "修复者资源", books: ["建筑的永恒之道", "修复与再生", "文化记忆"], vids: [{ title: "修复的力量", type: "TED" }, { title: "让旧物重生的设计师们", type: "纪录片" }], actions: ["选一件破损的物件，亲手修复它并记录过程", "把你守护的知识或技能教给至少5个人"] },
+    { stage: 2, icon: "🕯️", name: "传灯者资源", books: ["传承", "教育的目的", "最后一堂课"], vids: [{ title: "如何培养接班人？", type: "TED" }, { title: "跨越代际的对话", type: "YouTube" }], actions: ["找到或培养一个愿意继承你使命的人", "为你想传承的东西设计一套教学方案或入门指南"] }
+  ],
+  edge: [
+    { stage: 0, icon: "🧭", name: "远行者资源", books: ["荒野生存", "夜航西飞", "天生就会跑"], vids: [{ title: "为什么走出舒适区如此重要？", type: "TED" }, { title: "跨领域学习的力量", type: "YouTube" }], actions: ["掌握一项与你现有技能完全无关的新技能——30天挑战", "一个人去一个完全陌生的地方——不跟团、不定详细计划"] },
+    { stage: 1, icon: "⚡", name: "破界者资源", books: ["创新者的基因", "跨界思考", "创造力的本质"], vids: [{ title: "如何把不同领域的知识结合？", type: "TED" }, { title: "创新的秘密", type: "YouTube" }], actions: ["把两个不同领域的知识/技能结合，做出一件作品", "写一篇'跨界笔记'——分析一个你不熟悉的领域，找出其中可迁移到你的领域的东西"] },
+    { stage: 2, icon: "🗺️", name: "开荒者资源", books: ["创新者的解答", "从0到1", "未来的冲击"], vids: [{ title: "如何开拓一个全新的方向？", type: "TED" }, { title: "先驱者的故事", type: "YouTube" }], actions: ["公开发布你的独特方法论或作品——让更多人进入这个新领域", "设计一个'入门路径'，让后来者可以沿着你的足迹前进"] }
+  ]
+};
+
 // ============================================================
 // DEEP QUESTION TREE (branching, multi-round)
 // ============================================================
 const DEEP_TREE = {
+  // ROUND 1: General preference
   start: { id: "start", q: "什么样的时刻让你觉得「时间消失了」——完全沉浸，忘了周围一切？", presets: [
-    { text: "一个人安静地阅读、写作或思考，周围越安静越好。", next: "inward" },
-    { text: "在做一个具体的项目或任务——做手工、写代码、搭东西。", next: "outward" },
-    { text: "和一个或几个人深度聊天，互相倾诉、倾听、分享。", next: "connect" },
-    { text: "整理旧物、修复破损的东西、把混乱变得井井有条。", next: "guard" },
-    { text: "尝试完全陌生的东西——旅行、学新技能、闯进未知。", next: "explore" }
+    { text: "一个人安静地阅读、写作或思考，周围越安静越好。", next: "r2_inward" },
+    { text: "在做一个具体的项目或任务——做手工、写代码、搭东西。", next: "r2_outward" },
+    { text: "和一个或几个人深度聊天，互相倾诉、倾听、分享。", next: "r2_connect" },
+    { text: "整理旧物、修复破损、把混乱变得井井有条。", next: "r2_guard" },
+    { text: "尝试完全陌生的东西——旅行、学新技能、闯进未知。", next: "r2_explore" }
   ]},
-  inward: { id: "inward", q: "当你独处时，什么样的内心活动让你觉得'这样活着很值得'？", presets: [
-    { text: "突然理解了一件困惑很久的事——那种'原来如此'的瞬间。", next: "inward_insight" },
-    { text: "感受到一种平静的满足——不是狂喜，而是一种深层的'对了'。", next: "inward_peace" },
-    { text: "在创作中表达了自己——写了一段文字、画了一幅画、想通了一个道理。", next: "outward" },
-    { text: "回顾自己的成长，看到自己比以前更成熟、更清醒了。", next: "inward_growth" }
+  // ROUND 2: Deepen the preference
+  r2_inward: { id: "r2_inward", q: "当你独处时，什么样的事让你觉得'这样活着很值得'？", presets: [
+    { text: "突然理解了一件困惑很久的事——'原来如此'的瞬间。", next: "r3_insight" },
+    { text: "感受到一种深层的平静和满足——不是狂喜，而是'对了'。", next: "r3_peace" },
+    { text: "回顾自己的成长，看到自己比以前更清醒、更成熟。", next: "r3_growth" }
   ]},
-  inward_insight: { id: "inward_insight", q: "那种'原来如此'的瞬间，通常是在思考什么类型的问题？", presets: [
-    { text: "关于自己——我为什么会有这种情绪？我真正想要的是什么？", next: "values_self" },
-    { text: "关于世界——事物运行的规律、人性的本质、历史的逻辑。", next: "values_knowledge" },
-    { text: "关于关系——人与人之间为什么会这样？怎样才能更好地理解别人？", next: "connect" }
+  r2_outward: { id: "r2_outward", q: "做事的时候，什么让你最有成就感？", presets: [
+    { text: "看到自己完成的作品——一个项目、一件东西、一个可见的成果。", next: "r3_create" },
+    { text: "克服了恐惧——做了以前不敢做的事，突破了极限。", next: "r3_challenge" },
+    { text: "影响了别人——有人因为我做的事也开始行动了。", next: "r3_lead" }
   ]},
-  inward_peace: { id: "inward_peace", q: "那种'对了'的感觉，最常出现在什么之后？", presets: [
-    { text: "冥想、散步或者什么都不做——在安静中和自己相处。", next: "values_self" },
-    { text: "完成了一件需要耐心的事——读完一本难书、整理完房间、按计划完成目标。", next: "guard" },
-    { text: "帮助了别人——给朋友建议、倾听倾诉、让一个人感觉好一点。", next: "connect" }
+  r2_connect: { id: "r2_connect", q: "在人与人的关系中，你最看重什么？", presets: [
+    { text: "深度的理解——有人真正知道你是谁，不需要解释。", next: "r3_deep" },
+    { text: "温暖和归属感——知道自己属于一个群体，被需要。", next: "r3_belong" },
+    { text: "赋能——帮助别人变得更好，看到他们因你而成长。", next: "r3_empower" }
   ]},
-  inward_growth: { id: "inward_growth", q: "你想要的成长，更接近哪一种？", presets: [
-    { text: "成为一个情绪稳定、内心强大、不被外界动摇的人。", next: "values_self" },
-    { text: "成为一个能洞察事物本质、有智慧的人。", next: "values_knowledge" },
-    { text: "成为一个能帮助他人成长的人——你的经历能给别人力量。", next: "bridge" }
+  r2_guard: { id: "r2_guard", q: "你想守护的东西，最重要的价值是什么？", presets: [
+    { text: "它承载了记忆和历史——没有它，过去就消失了。", next: "r3_history" },
+    { text: "它本身就很美——艺术、工艺、大自然的造物。", next: "r3_beauty" },
+    { text: "它能让未来的人受益——传承给后代。", next: "r3_legacy" }
   ]},
-  outward: { id: "outward", q: "当你动手做事的时候，什么让你最有成就感？", presets: [
-    { text: "看到自己完成的东西——一件作品、一个项目、一个可见的结果。", next: "outward_create" },
-    { text: "知道自己的行动帮助了别人——解决了某个人的实际问题。", next: "bridge" },
-    { text: "做了以前不敢做的事——克服恐惧、突破自己的极限。", next: "explore" },
-    { text: "影响了别人——有人因为我做的事也开始行动了。", next: "outward_lead" }
+  r2_explore: { id: "r2_explore", q: "你探索的动力主要来自哪里？", presets: [
+    { text: "好奇心——'我不知道，我想搞清楚'。", next: "r3_curious" },
+    { text: "对自由和自我突破的渴望——'我不想被任何边界定义'。", next: "r3_freedom" },
+    { text: "对现状的不满足——'一定还有更好的方式'。", next: "r3_disrupt" }
   ]},
-  outward_create: { id: "outward_create", q: "你更享受创造的哪个环节？", presets: [
-    { text: "从零到一——把一个想法变成现实的兴奋感。", next: "star" },
-    { text: "打磨和优化——把一个粗糙的东西做到精致、做到完美。", next: "guard" },
-    { text: "分享和传播——让更多人看到、用到、被影响到。", next: "outward_lead" }
+  // ROUND 3: Values - what matters most
+  r3_insight: { id: "r3_insight", q: "那种'原来如此'的顿悟，通常是关于什么？", presets: [
+    { text: "关于自己——'我为什么会有这种感觉？我真正要什么？'", next: "r4_self" },
+    { text: "关于世界——万物运行的规律、人性的逻辑。", next: "r4_world" },
+    { text: "关于他人——人与人之间为什么会这样？", next: "r4_others" }
   ]},
-  outward_lead: { id: "outward_lead", q: "影响别人的时候，你更希望达到什么效果？", presets: [
-    { text: "让别人也相信自己可以——给他们信心和勇气。", next: "star" },
-    { text: "改变某个规则或系统——让环境变得更好，而不仅仅是个人。", next: "star" },
-    { text: "建立一种模式或方法——让后来的人可以参考和复制。", next: "root" }
+  r3_peace: { id: "r3_peace", q: "那种'对了'的感觉，最常在什么之后出现？", presets: [
+    { text: "放空、散步或冥想——在安静中和自己相处。", next: "r4_self" },
+    { text: "完成了一件需要耐心的事——读完书、整理完、坚持了计划。", next: "r4_discipline" },
+    { text: "帮助了别人——倾听朋友、给出建议、让一个人感觉好一点。", next: "r4_others" }
   ]},
-  connect: { id: "connect", q: "在人与人之间，你最看重什么？", presets: [
-    { text: "深度的理解——有人真正知道你是谁，不需要解释太多。", next: "connect_deep" },
-    { text: "温暖和归属感——知道自己属于一个群体，被接纳被需要。", next: "bridge" },
-    { text: "赋能——帮助别人变得更好，看到他们因为你而成长。", next: "bridge" },
-    { text: "和解——化解冲突、修复破裂的关系、让双方重新对话。", next: "connect_peace" }
+  r3_growth: { id: "r3_growth", q: "你想要成为的'更好的人'，更接近哪种？", presets: [
+    { text: "情绪稳定、内心强大、不被外界动摇的人。", next: "r4_self" },
+    { text: "能洞察本质、有智慧、能帮别人看清方向的人。", next: "r4_wisdom" },
+    { text: "能用自己的经历给他人力量的人。", next: "r4_others" }
   ]},
-  connect_deep: { id: "connect_deep", q: "什么样的关系让你觉得最满足？", presets: [
-    { text: "一对一的深度友谊——有一个完全信任的知己。", next: "moon" },
-    { text: "一个紧密的小圈子——几个人一起成长、互相扶持。", next: "bridge" },
-    { text: "能帮到陌生人——你的存在让素不相识的人生活变好了。", next: "star" }
+  r3_create: { id: "r3_create", q: "创造的过程中，你更享受哪个环节？", presets: [
+    { text: "从零到一——把想法变成现实的那一刻。", next: "r4_make" },
+    { text: "打磨和优化——把一个东西做到精致、完美。", next: "r4_discipline" },
+    { text: "分享和传播——让更多人看到、用到、被影响。", next: "r4_lead" }
   ]},
-  connect_peace: { id: "connect_peace", q: "你想化解的冲突，更多是在哪个层面？", presets: [
-    { text: "人与人之间——家人、朋友、同事之间的误解和伤害。", next: "bridge" },
-    { text: "群体之间——不同背景、不同立场的人之间的隔阂。", next: "star" },
-    { text: "人与自己之间——帮助人们和自己的过去和解。", next: "moon" }
+  r3_challenge: { id: "r3_challenge", q: "你克服的恐惧，更偏向哪种？", presets: [
+    { text: "对外部世界的恐惧——公开演讲、冒险、面对冲突。", next: "r4_make" },
+    { text: "对自我怀疑的恐惧——担心自己不够好、会失败。", next: "r4_self" },
+    { text: "对未知的恐惧——不确定性的不安。", next: "r4_freedom" }
   ]},
-  guard: { id: "guard", q: "你想守护或修复的东西，对你来说最重要的价值是什么？", presets: [
-    { text: "它承载了记忆和历史——没有它，一部分过去就永远消失了。", next: "root" },
-    { text: "它本身就很美——一件艺术品、一种工艺、一个地方的自然之美。", next: "root" },
-    { text: "它能让未来的人受益——传承下去，让后代也能拥有。", next: "root" },
-    { text: "修复它能让我平静——手工艺、整理、还原，本身就是一种治愈。", next: "moon" }
+  r3_lead: { id: "r3_lead", q: "影响别人的时候，你更想达到什么效果？", presets: [
+    { text: "让别人相信自己也可以——给他们信心和勇气。", next: "r4_empower" },
+    { text: "改变某个系统或规则——让环境变好，不只是个人。", next: "r4_disrupt" },
+    { text: "建立可复制的模式——让后来的人可以参考。", next: "r4_legacy" }
   ]},
-  explore: { id: "explore", q: "你探索的动力来自哪里？", presets: [
-    { text: "好奇心——'我不知道这个，我想搞清楚'。", next: "explore_curious" },
-    { text: "对现状的不满足——'这样还不够，一定还有更好的方式'。", next: "star" },
-    { text: "对自由的渴望——'我不想被任何边界定义'。", next: "edge" },
-    { text: "想找到真正的自己——'也许在不同的环境和文化里，我能看到不同的我'。", next: "moon" }
+  r3_deep: { id: "r3_deep", q: "什么样的关系让你觉得最满足？", presets: [
+    { text: "一对一深度友谊——有一个完全信任的知己。", next: "r4_self" },
+    { text: "紧密小圈子——几个人一起成长、互相扶持。", next: "r4_belong" },
+    { text: "能帮到陌生人——让素不相识的人生活变好。", next: "r4_empower" }
   ]},
-  explore_curious: { id: "explore_curious", q: "你的好奇心更偏向哪种？", presets: [
-    { text: "理解事物的本质——想知道世界是怎么运作的。", next: "values_knowledge" },
-    { text: "体验不同的生活——每种生活方式都是一种可能性。", next: "edge" },
-    { text: "创造新的东西——把不相干的点连成线，发明新东西。", next: "edge" }
+  r3_belong: { id: "r3_belong", q: "你想要的归属感，更接近哪种？", presets: [
+    { text: "一个温馨的小圈子——像家人一样的朋友。", next: "r4_belong" },
+    { text: "一个有共同使命的团队——为了同一个目标而战。", next: "r4_lead" },
+    { text: "一个能自由表达、不用伪装的社群。", next: "r4_self" }
   ]},
-  star: { id: "star", q: "如果一个想法或项目只能产生很小的影响，你还愿意做吗？", presets: [
-    { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
-    { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
-    { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
+  r3_empower: { id: "r3_empower", q: "帮助他人时，你最享受哪种感觉？", presets: [
+    { text: "看到对方眼里重新亮起光——给了别人希望。", next: "r4_others" },
+    { text: "看到对方独立成长——不再需要我了，这才是成功。", next: "r4_legacy" },
+    { text: "因为帮了一个人，影响了一群人——涟漪效应。", next: "r4_lead" }
   ]},
-  values_self: { id: "values_self", q: "如果必须在以下选项中选一个，你更害怕哪种'失败'？", presets: [
-    { text: "一生都没有真正了解自己。", next: "end_moon" },
-    { text: "一生都没有为别人做过什么有意义的事。", next: "end_bridge" },
-    { text: "一生都在做别人想让我做的事，没有为自己活过。", next: "end_moon" }
+  r3_history: { id: "r3_history", q: "你想守护的历史和记忆，对你来说意味着什么？", presets: [
+    { text: "它是我的根——没有过去，就没有我。", next: "r4_self" },
+    { text: "它值得被更多人知道——是人类的共同财富。", next: "r4_legacy" },
+    { text: "守护它本身就是一种意义——不需要更多理由。", next: "r4_discipline" }
   ]},
-  values_knowledge: { id: "values_knowledge", q: "你觉得一个人最重要的品质是什么？", presets: [
-    { text: "清醒——不被表象迷惑，能看到事物的本质。", next: "end_moon" },
-    { text: "勇敢——敢于质疑、敢于探索、敢于承认自己错了。", next: "end_edge" },
-    { text: "善良——在追求真理的同时不忘记人的温度。", next: "end_bridge" }
+  r3_beauty: { id: "r3_beauty", q: "美对你的意义是什么？", presets: [
+    { text: "美本身就是目的——不需要解释。", next: "r4_self" },
+    { text: "美能治愈人——我想让更多人感受到这种治愈。", next: "r4_others" },
+    { text: "创造美是一种反叛——在不美的世界里坚持美。", next: "r4_make" }
   ]},
-  values_action: { id: "values_action", q: "你更倾向于哪种行动方式？", presets: [
-    { text: "独自完成——效率高、控制感强，能完全按照自己的标准。", next: "end_star" },
-    { text: "带领团队——一起做更大事，虽然复杂但更有意义。", next: "end_star" },
-    { text: "启发别人——我不一定要做最大，但我希望成为火花。", next: "end_star" }
+  r3_legacy: { id: "r3_legacy", q: "你想留给后代的东西，最重要的是什么？", presets: [
+    { text: "知识和智慧——让他们比我们站得更高。", next: "r4_wisdom" },
+    { text: "一个更好的系统——让公平和美好自动运转。", next: "r4_disrupt" },
+    { text: "一种精神或态度——勇敢、善良、好奇。", next: "r4_empower" }
   ]},
-  values_scale: { id: "values_scale", q: "如果资源有限，你更倾向于把资源投在哪里？", presets: [
-    { text: "培养人——投资个人成长，好的种子会长成大树。", next: "end_bridge" },
-    { text: "搭建系统——建好管道，水自然会流。", next: "end_root" },
-    { text: "探索新模式——先实验，找到真正有效的路径再放大。", next: "end_edge" }
+  r3_curious: { id: "r3_curious", q: "你的好奇心更偏向哪种？", presets: [
+    { text: "理解事物的本质——想知道世界怎么运作的。", next: "r4_world" },
+    { text: "体验不同的生活——每种活法都是一种可能。", next: "r4_freedom" },
+    { text: "创造新东西——把不相干的点连成线。", next: "r4_make" }
   ]},
-  values_impact: { id: "values_impact", q: "你更希望在自己的人生中留下什么？", presets: [
-    { text: "一个能持续运行的组织或系统。", next: "end_root" },
-    { text: "一个改变了某个行业或领域的发明或方法。", next: "end_edge" },
-    { text: "一群因为我而改变了人生轨迹的人。", next: "end_bridge" }
+  r3_freedom: { id: "r3_freedom", q: "你渴望的自由，更接近哪种？", presets: [
+    { text: "思想和精神的自由——不被任何意识形态束缚。", next: "r4_wisdom" },
+    { text: "行动和生活方式的自由——想去哪就去哪，想做就做。", next: "r4_make" },
+    { text: "表达的自由——说出真话，做真实的自己。", next: "r4_self" }
   ]},
+  r3_disrupt: { id: "r3_disrupt", q: "你对现状的不满足，更多指向什么？", presets: [
+    { text: "个人层面——我自己的潜力远没有被发挥出来。", next: "r4_self" },
+    { text: "系统层面——这个世界的规则本身就需要被改变。", next: "r4_world" },
+    { text: "文化层面——人们的思想和价值观需要被刷新。", next: "r4_wisdom" }
+  ]},
+  // ROUND 4: Challenge / Fear / Reverse angle
+  r4_self: { id: "r4_self", q: "如果现在就躺下回顾一生，你更害怕哪种遗憾？（换个角度审视自己）", presets: [
+    { text: "一生都没有真正了解自己到底是谁。", next: "r5_moon_a" },
+    { text: "一生都在做别人想让我做的事，没有为自己活过。", next: "r5_moon_b" },
+    { text: "一生都没有为别人做过什么有意义的事。", next: "r5_bridge_a" }
+  ]},
+  r4_world: { id: "r4_world", q: "你觉得这个世界最缺什么？（你的答案暗示了你想成为什么）", presets: [
+    { text: "清醒——太多人被表象迷惑。", next: "r5_moon_a" },
+    { text: "勇气——太多人知道问题在哪，但不敢行动。", next: "r5_edge_a" },
+    { text: "善良——太多人在追求效率时丢了温度。", next: "r5_bridge_a" }
+  ]},
+  r4_others: { id: "r4_others", q: "你觉得一个人能给另一个人最宝贵的礼物是什么？", presets: [
+    { text: "理解——'我懂你'的力量超过一切。", next: "r5_bridge_a" },
+    { text: "希望——让对方相信明天可以更好。", next: "r5_star_a" },
+    { text: "自由——帮助对方从自己的牢笼里走出来。", next: "r5_moon_a" }
+  ]},
+  r4_wisdom: { id: "r4_wisdom", q: "你追求智慧，最终是为了什么？", presets: [
+    { text: "为了更好地理解自己和这个世界的关系。", next: "r5_moon_b" },
+    { text: "为了帮助别人——智慧不用来分享就失去了意义。", next: "r5_bridge_a" },
+    { text: "为了创造——智慧是创造新事物的原料。", next: "r5_edge_a" }
+  ]},
+  r4_discipline: { id: "r4_discipline", q: "坚持本身对你来说意味着什么？", presets: [
+    { text: "成长——每一次坚持都是一次对自己的超越。", next: "r5_moon_b" },
+    { text: "守护——坚持就是不让重要的东西消失。", next: "r5_root_a" },
+    { text: "证明——坚持是为了向自己证明'我可以'。", next: "r5_star_a" }
+  ]},
+  r4_freedom: { id: "r4_freedom", q: "如果给你完全的自由，没有任何约束，你第一件事会做什么？", presets: [
+    { text: "去一个陌生的地方，重新开始。", next: "r5_edge_a" },
+    { text: "开始做那个一直想做但没敢做的事。", next: "r5_star_a" },
+    { text: "什么都不做——享受自由本身。", next: "r5_moon_a" }
+  ]},
+  r4_make: { id: "r4_make", q: "你创造的东西，你最希望它有什么命运？", presets: [
+    { text: "被很多人使用和认可——创造要产生实际影响。", next: "r5_star_a" },
+    { text: "被时间记住——比我的生命更长。", next: "r5_root_a" },
+    { text: "成为后来者的起点——被改造、被超越。", next: "r5_edge_a" }
+  ]},
+  r4_lead: { id: "r4_lead", q: "如果你有能力让一件事变成现实，你更倾向于怎么做？", presets: [
+    { text: "亲自动手做——我享受过程中的掌控感。", next: "r5_star_a" },
+    { text: "把对的人聚在一起——团队的力量比我大。", next: "r5_bridge_a" },
+    { text: "设计一个系统让它自动运行——机制比个人重要。", next: "r5_root_a" }
+  ]},
+  r4_empower: { id: "r4_empower", q: "你帮助别人，最深层的动机是什么？", presets: [
+    { text: "这是我的使命——我经历过黑暗，所以想给别人光。", next: "r5_bridge_a" },
+    { text: "这样我的人生才有意义——被需要让我确认自己的价值。", next: "r5_star_a" },
+    { text: "这是最自然的活法——人与人本来就该互相支持。", next: "r5_bridge_a" }
+  ]},
+  r4_belong: { id: "r4_belong", q: "在群体中，你通常扮演什么角色？", presets: [
+    { text: "倾听者和支持者——大家有心事会找我。", next: "r5_bridge_a" },
+    { text: "组织者和推动者——我来张罗、我来带头。", next: "r5_star_a" },
+    { text: "旁观者和观察者——我看得多、说得少，但看得准。", next: "r5_moon_a" }
+  ]},
+  r4_disrupt: { id: "r4_disrupt", q: "你更想改变什么层面的东西？", presets: [
+    { text: "个人的命运——从一个人的改变开始。", next: "r5_star_a" },
+    { text: "群体的规则——改变一群人生活的环境。", next: "r5_bridge_a" },
+    { text: "世界的认知——改变人们看待事物的方式。", next: "r5_edge_a" }
+  ]},
+  r4_legacy: { id: "r4_legacy", q: "你更希望自己留下的是什么？", presets: [
+    { text: "一个持续运转的机制或组织——机器一旦开动就不停。", next: "r5_root_a" },
+    { text: "一种新的可能性——给后来者打开了之前没有的门。", next: "r5_edge_a" },
+    { text: "一群因为我的存在而变得不一样的人。", next: "r5_star_a" }
+  ]},
+  // ROUND 5: Vision - what would ideal look like?
+  r5_moon_a: { id: "r5_moon_a", q: "假如五年后你变成了一个'内心很强大'的人，最典型的标志是什么？", presets: [
+    { text: "外界的声音不再让我动摇——我知道自己在做什么，为什么做。", next: "end_moon" },
+    { text: "我能帮助别人看清他们的方向——因为我自己先看清了。", next: "end_bridge" },
+    { text: "我开始用我的方式影响世界——从内而外的改变。", next: "end_star" }
+  ]},
+  r5_moon_b: { id: "r5_moon_b", q: "'清醒地活着'对你来说意味着什么？", presets: [
+    { text: "不被别人的期待牵着走——每一天都在为自己活。", next: "end_moon" },
+    { text: "能看到事物的本质——不被表象、不被谎言欺骗。", next: "end_edge" },
+    { text: "既能看清自己，也能理解别人——清醒和温度并存。", next: "end_bridge" }
+  ]},
+  r5_star_a: { id: "r5_star_a", q: "如果你现在就可以启动一个项目改变世界，你会选择怎样的起点？", presets: [
+    { text: "从一个人的生活开始——帮一个具体的人。", next: "end_bridge" },
+    { text: "从自己的行动开始——我先做出样子，别人自然会跟上。", next: "end_star" },
+    { text: "从系统的漏洞开始——修好一个机制，影响成千上万。", next: "end_root" }
+  ]},
+  r5_bridge_a: { id: "r5_bridge_a", q: "什么样的'连接'，对你来说最有意义？", presets: [
+    { text: "心与心的连接——深度理解，不需要太多语言。", next: "end_moon" },
+    { text: "人与机会的连接——让对的人遇到对的事。", next: "end_bridge" },
+    { text: "过去与未来的连接——传承值得保留的东西。", next: "end_root" }
+  ]},
+  r5_edge_a: { id: "r5_edge_a", q: "'突破边界'最让你兴奋的是什么？", presets: [
+    { text: "看到别人没看到的东西——发现新大陆。", next: "end_edge" },
+    { text: "把不可能变成可能——用行动证明'可以'。", next: "end_star" },
+    { text: "打破别人的思维局限——帮更多人看到更大的世界。", next: "end_bridge" }
+  ]},
+  r5_root_a: { id: "r5_root_a", q: "'守护'和'传承'，你更在意哪一个？", presets: [
+    { text: "守护——此时此刻保护它不被破坏。", next: "end_root" },
+    { text: "传承——让它活下去，超过我的生命。", next: "end_root" },
+    { text: "让它进化——在传承中注入新的活力。", next: "end_edge" }
+  ]},
+  // END nodes
   end_moon: { id: "end_moon", end: true, type: "moon" },
   end_star: { id: "end_star", end: true, type: "star" },
   end_bridge: { id: "end_bridge", end: true, type: "bridge" },
   end_root: { id: "end_root", end: true, type: "root" },
-  end_edge: { id: "end_edge", end: true, type: "edge" },
-  star: { id: "star", q: "如果一个想法或项目只能产生很小的影响，你还愿意做吗？", presets: [
-    { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
-    { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
-    { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
-  ]}
+  end_edge: { id: "end_edge", end: true, type: "edge" }
 };
-// Note: 'star' node defined above near outward_create/lines, redefined here with proper presets
-// Fix duplicate: replace the earlier 'star' node
-DEEP_TREE.star = { id: "star", q: "你的行动产生了影响。现在问问自己：如果这个影响只能很小，你还愿意持续做下去吗？", presets: [
-  { text: "愿意——小影响也是影响，重要的是我在行动。", next: "values_action" },
-  { text: "要看情况——如果它能成长或复制，从小开始没问题。", next: "values_scale" },
-  { text: "不太愿意——我想把精力花在能产生最大改变的地方。", next: "values_impact" }
-]};
 
 // Deep exploration state
 let deepNode = null, deepAnswers = [], deepIdealType = null;
@@ -904,8 +1018,9 @@ function finalizeProfile() {
   var valueEls = document.querySelectorAll("#profile-values .tag-btn.picked");
   var values = Array.from(valueEls).map(function(el) { return el.textContent; });
   var actions = document.getElementById("profile-actions").value.trim();
-  saveProfile({ answer: answer, statement: statement, values: values, actions: actions, path: currentPath, createdAt: new Date().toISOString() });
-  saveCommunityEntry({ id: "user_" + Date.now(), name: loadNickname() || "我的档案", date: new Date().toISOString().slice(0, 10), statement: statement, values: values, progress: answer || actions });
+  var idealType = classifyIdealType(answers);
+  saveProfile({ answer: answer, statement: statement, values: values, actions: actions, path: currentPath, idealType: idealType, stage: 0, createdAt: new Date().toISOString() });
+  saveCommunityEntry({ id: "user_" + Date.now(), name: loadNickname() || "我的档案", date: new Date().toISOString().slice(0, 10), statement: statement, values: values, progress: answer || actions, idealType: idealType, stage: 0 });
   navigate("profile");
 }
 
@@ -923,8 +1038,11 @@ function renderProfile() {
   }
   var hist = loadProfileHistory(); var timeHtml = '';
   if (hist.length > 1) { timeHtml = '<div class="profile-section"><h3>理想时间线</h3><div style="font-size:0.85rem;color:var(--muted);">' + hist.slice(-5).reverse().map(function(h) { return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + new Date(h.date).toLocaleDateString("zh-CN") + ' — ' + escapeHtml((h.statement || "").slice(0, 60)) + (h.statement && h.statement.length > 60 ? '……' : '') + '</div>'; }).join("") + '</div></div>'; }
-  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (p.path === "deep" ? "深度探索" : PATH_META[p.path]?.name || "未知") + '」探索</p>' + (p.answer ? '<div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><h3 style="color:var(--accent);">🎯 你想成为什么样的人？</h3><p style="font-size:1.15rem;font-weight:650;line-height:1.6;color:var(--fg);">' + escapeHtml(p.answer) + '</p></div>' : '') + (p.idealType ? renderIdealTypeBox(p) : '') + '<div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + timeHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出档案</button><button class="btn btn-primary btn-sm" onclick="generateShareCard()">🖼️ 生成分享卡片</button></div></div>';
+  card.innerHTML = '<div class="fade-in"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h2 style="margin:0;">我的理想档案</h2><button class="btn btn-sm btn-outline" onclick="editProfile()">编辑</button></div><div class="profile-section"><h3>我的昵称</h3><div style="display:flex;gap:8px;"><input class="text-input" id="nickname-input" value="' + escapeHtml(nickname) + '" placeholder="设置昵称后导出档案给朋友……" style="min-height:auto;padding:10px 14px;font-size:0.9rem;"><button class="btn btn-sm btn-outline" onclick="saveNicknameFromInput()">保存</button></div></div><p style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;">创建于 ' + new Date(p.createdAt).toLocaleDateString("zh-CN") + ' · 通过「' + (p.path === "deep" ? "深度探索" : PATH_META[p.path]?.name || "未知") + '」探索</p>' + (p.answer ? '<div class="profile-section" style="background:var(--accent-bg);border:1.5px solid var(--accent-border);border-radius:var(--radius);padding:20px;margin-bottom:24px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h3 style="color:var(--accent);margin:0;">🎯 你想成为什么样的人？</h3><button class="btn btn-sm btn-outline" onclick="editAnswer()">编辑</button></div><p id="answer-display" style="font-size:1.15rem;font-weight:650;line-height:1.6;color:var(--fg);">' + escapeHtml(p.answer) + '</p><div id="answer-edit" style="display:none;"><textarea class="text-input" id="answer-edit-input" style="min-height:60px;font-size:1.1rem;font-weight:600;">' + escapeHtml(p.answer) + '</textarea><button class="btn btn-sm btn-primary" onclick="saveAnswerEdit()" style="margin-top:8px;">保存</button><button class="btn btn-sm btn-ghost" onclick="cancelAnswerEdit()" style="margin-top:8px;">取消</button></div></div>' : '') + (p.idealType ? renderIdealTypeBox(p) : '') + '<div class="profile-section"><h3>我想成为……</h3><div class="profile-block ' + (!p.statement ? 'empty' : '') + '">' + (p.statement || "还没有写下") + '</div></div><div class="profile-section"><h3>我的核心价值</h3><div class="tag-group">' + (p.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;">' + escapeHtml(v) + '</span>'; }).join("") + '</div></div><div class="profile-section"><h3>我正在做的尝试</h3><div class="profile-block ' + (!p.actions ? 'empty' : '') + '">' + (p.actions || "还没有行动计划") + '</div></div>' + achHtml + timeHtml + '<hr><div style="display:flex;flex-wrap:wrap;gap:8px;"><button class="btn btn-outline btn-sm" onclick="navigate(\'action\')">进入行理想 →</button><button class="btn btn-outline btn-sm" onclick="navigate(\'community\')">去理想广场 →</button><button class="btn btn-primary btn-sm" onclick="exportData()">📤 导出档案</button><button class="btn btn-primary btn-sm" onclick="generateShareCard()">🖼️ 生成分享卡片</button></div></div>';
 }
+function editAnswer() { document.getElementById("answer-display").style.display = "none"; document.getElementById("answer-edit").style.display = "block"; document.getElementById("answer-edit-input").focus(); }
+function saveAnswerEdit() { var p = loadProfile(); p.answer = document.getElementById("answer-edit-input").value.trim(); saveProfile(p); navigate("profile"); }
+function cancelAnswerEdit() { document.getElementById("answer-display").style.display = "block"; document.getElementById("answer-edit").style.display = "none"; }
 function renderIdealTypeBox(p) {
   var pw = IDEAL_PATHWAYS[p.idealType]; if (!pw) return '';
   var stage = pw.stages[p.stage || 0];
@@ -986,6 +1104,16 @@ function getBookSearchUrl(title) {
 function renderActionStep1(card, p) {
   var values = p.values || [];
   var allResources = []; var seenR = {};
+  // Stage-specific resources take priority
+  if (p.idealType && STAGE_RESOURCES[p.idealType]) {
+    var sr = STAGE_RESOURCES[p.idealType][p.stage || 0];
+    if (sr) {
+      sr.books.forEach(function(b) { if (!seenR["b:" + b]) { seenR["b:" + b] = true; allResources.push({ type: "book", name: b, icon: "📖" }); } });
+      sr.vids.forEach(function(vd) { var key = "v:" + vd.title; if (!seenR[key]) { seenR[key] = true; allResources.push({ type: "video", name: vd.title, tag: vd.type, icon: "🎬" }); } });
+      sr.actions.forEach(function(a) { var key = "a:" + a; if (!seenR[key]) { seenR[key] = true; allResources.push({ type: "action", name: a, icon: "🎯" }); } });
+    }
+  }
+  // Also add value-based resources
   values.forEach(function(v) {
     var rm = RESOURCE_MAP[v] || DEFAULT_RESOURCE;
     rm.books.forEach(function(b) { if (!seenR["b:" + b]) { seenR["b:" + b] = true; allResources.push({ type: "book", name: b, icon: "📖" }); } });

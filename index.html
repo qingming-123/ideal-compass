@@ -1416,13 +1416,19 @@ renderHomeTab();
 
 // Welcome overlay - show once
 (function() {
-  if (localStorage.getItem("ic_welcomed")) return;
+  try {
+    if (localStorage.getItem("ic_welcomed")) { var el = document.getElementById("welcome-overlay"); if (el) el.style.display = "none"; return; }
+  } catch(e) {}
   var overlay = document.getElementById("welcome-overlay");
   if (!overlay) return;
-  overlay.style.display = "flex";
-  var dismiss = function() { overlay.classList.add("fade-out"); setTimeout(function() { overlay.style.display = "none"; }, 600); localStorage.setItem("ic_welcomed", "1"); };
-  overlay.addEventListener("click", dismiss);
-  setTimeout(dismiss, 3500);
+  function dismissWelcome() {
+    overlay.style.opacity = "0";
+    overlay.style.pointerEvents = "none";
+    setTimeout(function() { overlay.style.display = "none"; }, 600);
+    try { localStorage.setItem("ic_welcomed", "1"); } catch(e) {}
+  }
+  overlay.onclick = dismissWelcome;
+  setTimeout(dismissWelcome, 3500);
 })();
 </script>
 </body>

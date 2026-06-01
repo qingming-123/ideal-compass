@@ -149,6 +149,17 @@
   .deep-hero:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
   [data-theme="dark"] .deep-hero { background: linear-gradient(135deg, #3b2f0e, #2d2418); border-color: #92400e; }
 
+  /* Welcome overlay */
+  .welcome-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); z-index: 999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
+  .welcome-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .welcome-card { background: var(--card); border-radius: var(--radius); padding: 40px 36px; max-width: 440px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.18); animation: welcomeIn 0.5s ease; }
+  @keyframes welcomeIn { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .welcome-card .w-icon { font-size: 3rem; display: block; margin-bottom: 12px; animation: float 2s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .welcome-card h2 { font-size: 1.4rem; margin-bottom: 6px; }
+  .welcome-card .w-desc { font-size: 0.88rem; color: var(--fg2); line-height: 1.7; margin-bottom: 6px; }
+  .welcome-card .w-hint { font-size: 0.75rem; color: var(--muted); }
+
   /* Book cards */
   .book-card { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: all 0.25s; }
   .book-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-1px); }
@@ -202,6 +213,18 @@
 </style>
 </head>
 <body>
+
+<!-- Welcome overlay -->
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-card">
+    <span class="w-icon">🧭</span>
+    <h2>欢迎来到理想罗盘</h2>
+    <p class="w-desc">不是「你能做什么工作」，而是<strong>「你想成为谁」</strong>。</p>
+    <p class="w-desc">在这里，你可以通过深度探索找到属于自己的<strong>理想途径</strong>，制定修炼计划，点亮里程碑，和朋友分享你的方向。</p>
+    <p class="w-hint">点击任意位置或等待 3 秒自动进入</p>
+  </div>
+</div>
+
 <div class="app-shell" id="app">
 
   <div class="topbar">
@@ -1390,6 +1413,17 @@ function escapeHtml(str) { if (!str) return ""; var div = document.createElement
 idealProfile = loadProfile();
 applyTheme(loadTheme());
 renderHomeTab();
+
+// Welcome overlay - show once
+(function() {
+  if (localStorage.getItem("ic_welcomed")) return;
+  var overlay = document.getElementById("welcome-overlay");
+  if (!overlay) return;
+  overlay.style.display = "flex";
+  var dismiss = function() { overlay.classList.add("fade-out"); setTimeout(function() { overlay.style.display = "none"; }, 600); localStorage.setItem("ic_welcomed", "1"); };
+  overlay.addEventListener("click", dismiss);
+  setTimeout(dismiss, 3500);
+})();
 </script>
 </body>
 </html>

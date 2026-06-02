@@ -149,6 +149,13 @@
   .welcome-card .w-desc { font-size: 0.88rem; color: var(--fg2); line-height: 1.7; margin-bottom: 6px; }
   .welcome-card .w-hint { font-size: 0.75rem; color: var(--muted); }
 
+/* Ideal type box */
+.ideal-type-box { background: linear-gradient(135deg, #fdf4ff, var(--accent-bg)); border: 1.5px solid var(--accent-border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+.ideal-stage-box { background: var(--card); border: 1px solid var(--green-border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+[data-theme="dark"] .ideal-type-box { background: linear-gradient(135deg, #2d1f2e, #2d2418); border-color: #92400e; }
+[data-theme="dark"] .ideal-stage-box { background: #1c1917; }
+
+
   /* Book cards */
   .book-card { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: all 0.25s; }
   .book-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); transform: translateY(-1px); }

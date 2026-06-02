@@ -620,6 +620,27 @@ function deepBack() {
   saveDeepProgress();
   renderDeepStep();
 }
+function advanceDeepExplore() {
+  var val = document.getElementById("deep-answer").value.trim();
+  if (!val) return;
+  var node = DEEP_TREE[deepNode];
+  var matchedPreset = null;
+  if (node && node.presets) {
+    for (var i = 0; i < node.presets.length; i++) {
+      if (val.indexOf(node.presets[i].text) === 0) { matchedPreset = node.presets[i]; break; }
+    }
+  }
+  if (!matchedPreset && node && node.presets && node.presets.length > 0) { matchedPreset = node.presets[0]; }
+  answers["deep_" + deepNode] = val;
+  deepAnswers.push({ node: deepNode, answer: val, score: matchedPreset ? matchedPreset.score : [1,1,1,1,1], round: matchedPreset && node ? (node.round || 1) : 1 });
+  if (!node || node.end) { finishDeepExplore(); return; }
+  var nextNode = matchedPreset ? matchedPreset.next : "r8";
+  deepNode = nextNode;
+  if (deepAnswers.length >= 20 || (DEEP_TREE[deepNode] && DEEP_TREE[deepNode].end)) { finishDeepExplore(); return; }
+  saveDeepProgress();
+  renderDeepStep();
+}
+
 function finishDeepExplore() {
   deepIdealType = classifyIdealType(answers);
   var pw = IDEAL_PATHWAYS[deepIdealType];

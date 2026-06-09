@@ -496,8 +496,37 @@ let observedIdx = null;
 function loadProfile() { const raw = localStorage.getItem("ic_profile"); return raw ? JSON.parse(raw) : null; }
 function saveProfile(p) { idealProfile = p; localStorage.setItem("ic_profile", JSON.stringify(p)); var hist = loadProfileHistory(); hist.push({ statement: p.statement, values: p.values, actions: p.actions, date: new Date().toISOString() }); if (hist.length > 20) hist = hist.slice(-20); localStorage.setItem("ic_profile_history", JSON.stringify(hist)); }
 function loadProfileHistory() { var raw = localStorage.getItem("ic_profile_history"); return raw ? JSON.parse(raw) : []; }
-function loadCommunity() { const raw = localStorage.getItem("ic_community"); let e = raw ? JSON.parse(raw) : []; if (e.length === 0) { e = SEED_COMMUNITY; localStorage.setItem("ic_community", JSON.stringify(e)); } return e; }
-function saveCommunityEntry(entry) { const e = loadCommunity(); e.unshift(entry); localStorage.setItem("ic_community", JSON.stringify(e)); }
+async function loadCommunity() {
+  try {
+    var { data, error } = await supabase.from("community").select("*").order("created_at", { ascending: false });
+    if (!error && data && data.length > 0) return data;
+  } catch(e) { console.log("Supabase fetch failed, using local fallback"); }
+  var raw = localStorage.getItem("ic_community");
+  var e = raw ? JSON.parse(raw) : [];
+  if (e.length === 0) { e = SEED_COMMUNITY; seedSupabase(); }
+  return e;
+}
+async function seedSupabase() {
+  try {
+    for (var i = 0; i < SEED_COMMUNITY.length; i++) {
+      var s = SEED_COMMUNITY[i];
+      await supabase.from("community").upsert({
+        id: s.id, name: s.name, date: s.date, statement: s.statement,
+        values: JSON.stringify(s.values || []), progress: s.progress, ideal_type: "", stage: 0
+      });
+    }
+  } catch(e) {}
+}
+function saveCommunityEntry(entry) {
+  try { supabase.from("community").insert({
+    id: entry.id, name: entry.name, date: entry.date, statement: entry.statement,
+    values: JSON.stringify(entry.values || []), progress: entry.progress,
+    ideal_type: entry.idealType || "", stage: entry.stage || 0
+  }).then(function() {}).catch(function() {}); } catch(e) {}
+  var raw = localStorage.getItem("ic_community");
+  var e = raw ? JSON.parse(raw) : [];
+  e.unshift(entry); localStorage.setItem("ic_community", JSON.stringify(e));
+}
 function loadAchievements() { const raw = localStorage.getItem("ic_achievements"); return raw ? JSON.parse(raw) : []; }
 function saveAchievements(a) { localStorage.setItem("ic_achievements", JSON.stringify(a)); }
 function loadActionPlan() { const raw = localStorage.getItem("ic_actionplan"); return raw ? JSON.parse(raw) : null; }
@@ -857,9 +886,17 @@ function editProfile() { var p = loadProfile(); if (!p) return; answers = {}; cu
 // COMMUNITY
 // ============================================================
 
-function renderCommunity() {
-  var card = document.getElementById("community-card"), entries = loadCommunity();
-  card.innerHTML = '<div class="fade-in"><h2>理想广场</h2><p class="sub">这里有一些人认真写下了他们的理想。点击任何一张卡片查看详情。你也可以导入朋友导出的档案。</p><div style="display:flex;gap:8px;margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'import-file\').click()">📥 导入朋友档案</button><input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)"><input type="file" id="restore-file" accept=".json" style="display:none;" onchange="importAllData(event)"><button class="btn btn-outline btn-sm" onclick="triggerRestore()">🔄 恢复备份</button></div><div class="community-grid">' + entries.map(function(e) { var pwBadge = ''; if (e.idealType) { var pw = IDEAL_PATHWAYS[e.idealType]; if (pw) { var st = pw.stages[e.stage || 0]; pwBadge = '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--accent);margin-bottom:6px;">' + pw.icon + ' ' + pw.name + ' · ' + (st ? st.icon + st.name : '入门') + '</span>'; } } return '<div class="persona-card" onclick="openProfile(\'' + e.id + '\')"><div class="persona-header"><span class="persona-name">' + escapeHtml(e.name) + '</span><span class="persona-date">' + escapeHtml(e.date) + '</span></div>' + pwBadge + '<p class="persona-statement">' + escapeHtml((e.statement || "").substring(0, 150)) + ((e.statement || "").length > 150 ? '……' : '') + '</p><div class="tag-group" style="margin-top:8px;">' + (e.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;font-size:0.78rem;padding:4px 12px;">' + escapeHtml(v) + '</span>'; }).join("") + '</div>' + (e.progress ? '<p style="font-size:0.8rem;color:var(--accent);margin-top:8px;">→ ' + escapeHtml(e.progress) + '</p>' : '') + '</div>'; }).join("") + '</div></div>';
+async function renderCommunity() {
+  var card = document.getElementById("community-card");
+  card.innerHTML = '<div class="fade-in"><h2>理想广场</h2><p class="sub">正在加载……</p></div>';
+  var entries = await loadCommunity();
+  // Normalize entries from Supabase or localStorage
+  entries = entries.map(function(e) {
+    var vals = e.values;
+    if (typeof vals === "string") { try { vals = JSON.parse(vals); } catch(ex) { vals = []; } }
+    return { id: e.id, name: e.name, date: e.date, statement: e.statement, values: vals || [], progress: e.progress, idealType: e.ideal_type || e.idealType, stage: e.stage || 0 };
+  });
+  card.innerHTML = '<div class="fade-in"><h2>理想广场</h2><p class="sub">这里有一些人认真写下了他们的理想。每个人的档案都实时存储在云端。</p><div style="display:flex;gap:8px;margin-bottom:16px;"><button class="btn btn-outline btn-sm" onclick="document.getElementById(\'import-file\').click()">📥 导入朋友档案</button><input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)"><input type="file" id="restore-file" accept=".json" style="display:none;" onchange="importAllData(event)"><button class="btn btn-outline btn-sm" onclick="triggerRestore()">🔄 恢复备份</button></div><div class="community-grid">' + entries.map(function(e) { var pwBadge = ''; if (e.idealType) { var pw = IDEAL_PATHWAYS[e.idealType]; if (pw) { var st = pw.stages[e.stage || 0]; pwBadge = '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--accent);margin-bottom:6px;">' + pw.icon + ' ' + pw.name + ' · ' + (st ? st.icon + st.name : '入门') + '</span>'; } } return '<div class="persona-card" onclick="openProfile(\'' + e.id + '\')"><div class="persona-header"><span class="persona-name">' + escapeHtml(e.name) + '</span><span class="persona-date">' + escapeHtml(e.date) + '</span></div>' + pwBadge + '<p class="persona-statement">' + escapeHtml((e.statement || "").substring(0, 150)) + ((e.statement || "").length > 150 ? '……' : '') + '</p><div class="tag-group" style="margin-top:8px;">' + (e.values || []).map(function(v) { return '<span class="tag-btn picked" style="cursor:default;font-size:0.78rem;padding:4px 12px;">' + escapeHtml(v) + '</span>'; }).join("") + '</div>' + (e.progress ? '<p style="font-size:0.8rem;color:var(--accent);margin-top:8px;">→ ' + escapeHtml(e.progress) + '</p>' : '') + '</div>'; }).join("") + '</div></div>';
 }
 function openProfile(id) {
   var entries = loadCommunity(), e = entries.find(function(en) { return en.id === id; }); if (!e) return;
